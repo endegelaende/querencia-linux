@@ -1,0 +1,121 @@
+---
+name: Build ISO
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build image"]
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-iso:
+    name: Build ISO installer
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+
+    env:
+      IMAGE_REF: ghcr.io/${{ github.repository_owner }}/querencia-linux:latest
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 4096
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+
+      - name: Install Podman (latest)
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL "https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_$(lsb_release -rs)/Release.key" \
+            | gpg --dearmor \
+            | sudo tee /etc/apt/keyrings/devel_kubic_libcontainers_unstable.gpg > /dev/null
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/devel_kubic_libcontainers_unstable.gpg] \
+            https://download.opensuse.org/repositories/devel:kubic:libcontainers:unstable/xUbuntu_$(lsb_release -rs)/ /" \
+            | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get -qq -y install podman
+          podman --version
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            sudo podman login -u ${{ github.actor }} --password-stdin ghcr.io
+
+      - name: Pull image
+        run: |
+          sudo podman pull ${{ env.IMAGE_REF }}
+
+      - name: Build ISO
+        run: |
+          mkdir -p ./output
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v ./output:/output \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type iso \
+            --progress verbose \
+            ${{ env.IMAGE_REF }}
+
+      - name: List output
+        if: always()
+        run: |
+          echo "=== Output directory ==="
+          find ./output -type f -exec ls -lh {} \;
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(sudo podman inspect ${{ env.IMAGE_REF }} --format '{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null || echo "latest")
+          DATE=$(date +%Y%m%d)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "date=${DATE}" >> "$GITHUB_OUTPUT"
+          echo "filename=querencia-linux-${VERSION}-${DATE}.iso" >> "$GITHUB_OUTPUT"
+
+      - name: Rename ISO
+        run: |
+          ISO_FILE=$(find ./output -name "*.iso" -type f | head -1)
+          if [ -z "$ISO_FILE" ]; then
+            echo "::error::No ISO file found in output directory"
+            exit 1
+          fi
+          mv "$ISO_FILE" "./output/${{ steps.version.outputs.filename }}"
+          echo "ISO renamed to ${{ steps.version.outputs.filename }}"
+          ls -lh "./output/${{ steps.version.outputs.filename }}"
+
+      - name: Generate SHA256 checksum
+        run: |
+          cd ./output
+          sha256sum "${{ steps.version.outputs.filename }}" > "${{ steps.version.outputs.filename }}.sha256"
+          cat "${{ steps.version.outputs.filename }}.sha256"
+
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.filename }}
+          path: |
+            ./output/${{ steps.version.outputs.filename }}
+            ./output/${{ steps.version.outputs.filename }}.sha256
+          retention-days: 7
+          compression-level: 0
