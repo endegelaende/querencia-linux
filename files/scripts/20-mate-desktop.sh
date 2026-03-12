@@ -20,6 +20,9 @@ dnf install -y engrampa || true
 dnf install -y eom || true
 dnf install -y atril || true
 
+# LightDM greeter: slick-greeter is primary, gtk-greeter as fallback
+dnf install -y lightdm-gtk-greeter || true
+
 # Fonts
 dnf install -y \
     google-noto-sans-fonts \
@@ -54,6 +57,20 @@ chown lightdm:lightdm /var/lib/lightdm-data 2>/dev/null || true
 chown lightdm:lightdm /var/cache/lightdm 2>/dev/null || true
 chown root:lightdm /var/log/lightdm 2>/dev/null || true
 chmod 0750 /var/log/lightdm 2>/dev/null || true
+
+# Ensure MATE session file exists for LightDM
+if [ ! -f /usr/share/xsessions/mate.desktop ]; then
+    mkdir -p /usr/share/xsessions
+    cat > /usr/share/xsessions/mate.desktop <<'XSESSION'
+[Desktop Entry]
+Name=MATE
+Comment=This session logs you into MATE
+Exec=mate-session
+TryExec=mate-session
+Type=Application
+DesktopNames=MATE
+XSESSION
+fi
 
 # Enable LightDM and graphical target
 systemctl enable lightdm
