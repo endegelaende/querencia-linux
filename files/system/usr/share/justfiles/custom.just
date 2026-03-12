@@ -63,6 +63,7 @@ setup-flatpak:
 # Install recommended Flatpak apps
 install-essentials:
     @echo "Installing recommended Flatpak apps..."
+    flatpak install -y flathub app.drey.Bazaar
     flatpak install -y flathub org.mozilla.firefox
     flatpak install -y flathub org.mozilla.Thunderbird
     flatpak install -y flathub org.libreoffice.LibreOffice
@@ -71,6 +72,8 @@ install-essentials:
     flatpak install -y flathub com.github.tchx84.Flatseal
     flatpak install -y flathub io.github.celluloid_player.Celluloid
     @echo "Essential apps installed."
+    @echo ""
+    @echo "Bazaar (App Store) is available in your application menu."
 
 # Remove unused Flatpak runtimes
 clean-flatpak:
