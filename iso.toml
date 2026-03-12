@@ -1,22 +1,36 @@
 # bootc-image-builder ISO configuration for Querencia Linux
-# Anaconda graphical installer with post-install setup for MATE desktop
+# Interactive Anaconda installer with language, keyboard and network selection
 
 [customizations.installer.kickstart]
 contents = """
+# Interactive graphical installer
 graphical
+
+# Let the user choose these interactively (not preset)
+# Language, keyboard, timezone, root password, user creation
+# are all handled by Anaconda GUI
+
+# Network: activate DHCP so Anaconda has connectivity
+network --bootproto=dhcp --activate --onboot=yes
+
+# Bootloader
+bootloader --append="quiet splash"
+
+# Do NOT preset partitioning -- let user choose
+# (Anaconda will prompt for disk selection and partitioning)
 
 %post --erroronfail --log=/root/anaconda-post.log
 
 # Graphical target (LightDM + MATE)
 systemctl set-default graphical.target
 
-# Services aktivieren
+# Enable services
 systemctl enable lightdm.service
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
 systemctl enable fstrim.timer
 
-# LightDM runtime directories (bootc/ostree clears /var)
+# LightDM runtime directories (bootc/ostree clears /var on first boot)
 mkdir -p /var/lib/lightdm-data
 mkdir -p /var/cache/lightdm
 mkdir -p /var/log/lightdm
