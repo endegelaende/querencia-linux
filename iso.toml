@@ -6,10 +6,6 @@ contents = """
 # Interactive graphical installer
 graphical
 
-# Let the user choose these interactively (not preset)
-# Language, keyboard, timezone, root password, user creation
-# are all handled by Anaconda GUI
-
 # Network: activate DHCP so Anaconda has connectivity
 network --bootproto=dhcp --activate --onboot=yes
 
@@ -38,6 +34,17 @@ chown lightdm:lightdm /var/lib/lightdm-data
 chown lightdm:lightdm /var/cache/lightdm
 chown root:lightdm /var/log/lightdm
 chmod 0750 /var/log/lightdm
+
+# Apply dconf MATE defaults (themes, fonts, terminal colors)
+dconf update || true
+
+# Create all tmpfiles.d entries
+systemd-tmpfiles --create || true
+
+# SELinux: relabel filesystem on next boot if enforcing
+if [ -f /etc/selinux/config ]; then
+    touch /.autorelabel
+fi
 
 %end
 """

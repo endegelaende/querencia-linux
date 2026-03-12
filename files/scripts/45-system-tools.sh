@@ -14,7 +14,14 @@ dnf install -y \
     htop \
     wget \
     curl \
-    git
+    git \
+    almalinux-backgrounds
+
+# Xorg drivers for VM support (QXL/SPICE, VESA fallback)
+dnf install -y xorg-x11-drv-qxl || true
+dnf install -y xorg-x11-drv-vesa || true
+dnf install -y xorg-x11-drv-fbdev || true
+dnf install -y spice-vdagent || true
 
 # Optional tools (may not be in all repos)
 dnf install -y fastfetch || true
