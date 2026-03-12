@@ -1,0 +1,461 @@
+# COPR Fork: MateDesktop-EL10
+
+> Fork of [skip77/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/skip77/MateDesktop-EL10/)
+> for long-term supply-chain independence of Querencia Linux.
+
+## Why Fork?
+
+The skip77 COPR is the **only source** of MATE Desktop packages for EL10 (AlmaLinux, Rocky, CentOS Stream).
+It is maintained by a single person. If the repo goes offline, our image can no longer be built.
+
+Forking gives us:
+- **Independence** — we control the build pipeline
+- **Stability** — we pin to EL10-compatible Fedora branches (not rawhide)
+- **Automation** — scheduled rebuilds catch security updates
+- **Transparency** — full audit trail of what goes into our image
+
+## EL10 Compatibility Strategy
+
+### The Problem with `rawhide`
+
+skip77 builds ~80 packages from the Fedora `rawhide` branch. This works today but is fragile:
+
+- **rawhide** = Fedora 45+ (bleeding edge, constantly changing)
+- **EL10** is based on the Fedora 40/41 dependency stack
+- If rawhide bumps a dependency beyond what EL10 provides (e.g. `glib2 >= 2.84`
+  when EL10 has `glib2-2.80`), the build **breaks silently**
+
+### Why MATE Specs Are Stable Across Fedora Releases
+
+Looking at the actual spec files (e.g. `mate-desktop.spec`), the differences
+between `f41`, `f42`, and `f43` branches are almost exclusively **Mass Rebuild
+bumps** (Release tag increments). The source tarballs, BuildRequires, and patches
+are identical — MATE 1.28.x uses GTK3, glib2, cairo, and other libraries that
+have been stable for years. The MATE upstream project releases only every 6–12
+months and does not chase new dependencies.
+
+This means: **the Fedora branch EOL status does not matter much for MATE
+packages.** An EOL branch like `f41` still compiles fine against EL10. However,
+the branch also receives **no security patches or bugfixes** from Fedora
+maintainers after EOL. For desktop components like MATE this is acceptable
+(security-critical code is in the base OS, not in the DE), but for libraries
+like `libsoup`, `xorg-x11-server`, or `network-manager-applet` we want the
+newest bugfixes we can safely build.
+
+### Our Branch Strategy: Pin to `f43`
+
+**Use the newest Fedora stable release** that still builds against EL10.
+Currently that is **`f43`** (released Oct 2025, EOL ~Dec 2026).
+
+| Branch | Fedora | Status (Mar 2026) | EL10 Compat | Our Use |
+|---|---|---|---|---|
+| `rawhide` | 45+ | 🔧 Development | ⚠️ Can break anytime | ❌ Avoid |
+| `f44` | 44 | 🔧 Development / Pre-release | ⚠️ Unstable | ❌ Avoid |
+| **`f43`** | **43** | ✅ **Current stable** | ✅ **Builds fine** | ✅ **Default** |
+| `f42` | 42 | ⚠️ EOL May 2026 | ✅ Builds fine | 🔄 Fallback |
+| `f41` | 41 | ❌ EOL Dec 2025 | ✅ Builds fine | 🔄 Fallback |
+| `f40` | 40 | ❌ EOL May 2025 | ✅ Builds fine | ❌ Too old |
+| `epel10` | EL10 | ✅ Active | ✅ Perfect | ✅ **Preferred when available** |
+
+**Priority order for each package:**
+1. `epel10` branch (if it exists) — built specifically for EL10, always prefer
+2. `f43` branch — current stable Fedora, receives bugfixes and security patches
+3. `f42` branch — fallback if f43 doesn't exist or breaks against EL10
+4. `f41` branch — last resort stable branch (EOL, but specs still compile)
+5. `rawhide` — absolute last resort, only for packages with no stable branch
+
+### Why Not an Older Branch Closer to EL10's Base?
+
+EL10 is based on Fedora 40/41, so one might think `f41` is the "safest" choice.
+But:
+- `f41` has been **EOL since Dec 2025** — zero security patches
+- The MATE specs on `f43` have the **same source tarballs and deps** as `f41`
+  (just rebuilt for the f43 mass rebuild)
+- `f43` gets **active Fedora maintainer attention** — if a CVE hits libsoup or
+  xorg-x11-server, the `f43` branch gets the patch; `f41` does not
+- If an `f43` spec ever adds a dependency that EL10 can't satisfy, the COPR
+  build will simply fail and we fall back to `f42` for that one package
+
+### When to Bump to `f44`
+
+When Fedora 44 is released as stable (~Apr 2026) and `f43` approaches EOL
+(~Dec 2026), switch the default branch to `f44`. Update the `packages.json`
+file and trigger a full rebuild. If any package fails, keep that specific
+package on `f43` until the issue is resolved.
+
+Also watch [AlmaLinux 10 release notes](https://wiki.almalinux.org/) — if a
+point release (10.2, 10.3) rebases core libraries, that may require adjusting
+our branch choice.
+
+## Package Inventory
+
+### Overview
+
+| Category | Count | Source | Auto-Update? |
+|---|---|---|---|
+| SCM (Fedora src.fedoraproject.org) | ~80 | Git branches | ✅ Yes (COPR auto-rebuild or scheduled) |
+| SCM (skip77 GitLab) | 4 | skip77's patches | ⚠️ Manual (fork the GitLab repos) |
+| Upload (SRPMs) | 16 | Manual uploads | ❌ Manual (mostly stable/legacy) |
+
+### SCM Packages from Fedora (auto-updatable)
+
+These point to `src.fedoraproject.org` and can be switched from `rawhide` → `f43`:
+
+#### MATE Desktop Core
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `mate-common` | rawhide | f43 | Build macros |
+| `mate-desktop` | rawhide | f43 | Core library |
+| `mate-menus` | rawhide | f43 | Menu system |
+| `mate-menu` | rawhide | f43 | Advanced menu |
+| `mate-panel` | rawhide | f43 | Panel |
+| `mate-session-manager` | rawhide | f43 | Session manager |
+| `mate-settings-daemon` | rawhide¹ | f43 | Settings daemon |
+| `mate-control-center` | rawhide | f43 | Control center |
+| `mate-polkit` | rawhide | f43 | PolicyKit agent |
+| `mate-backgrounds` | rawhide | f43 | Wallpapers |
+| `mate-icon-theme` | rawhide | f43 | Icons |
+| `mate-themes` | rawhide | f43 | GTK themes |
+| `mate-media` | rawhide | f43 | Volume control |
+| `mate-notification-daemon` | rawhide | f43 | Notifications |
+| `mate-power-manager` | rawhide | f43 | Power management |
+| `mate-screensaver` | rawhide | f43 | Screen lock |
+| `mate-system-monitor` | rawhide | f43 | Task manager |
+| `mate-terminal` | rawhide | f43 | Terminal emulator |
+| `mate-calc` | rawhide | f43 | Calculator |
+| `mate-utils` | rawhide | f43 | Utilities |
+| `mate-applets` | rawhide | f43 | Panel applets |
+| `mate-sensors-applet` | rawhide | f43 | Hardware sensors |
+| `mate-user-guide` | rawhide | f43 | Documentation |
+| `mate-user-admin` | rawhide | f43 | User management |
+| `libmatekbd` | rawhide | f43 | Keyboard library |
+| `libmatemixer` | rawhide | f43 | Audio mixer library |
+| `libmateweather` | rawhide² | f43 | Weather library |
+| `marco` | rawhide | f43 | Window manager |
+
+> ¹ skip77 sources `mate-settings-daemon` from his GitLab, see "GitLab Packages" below
+> ² `libmateweather` uses `distgit` source type (functionally same as SCM)
+
+#### Caja (File Manager)
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `caja` | rawhide | f43 |
+| `caja-extensions` | rawhide | f43 |
+| `caja-actions` | rawhide | f43 |
+| `python-caja` | rawhide | f43 |
+
+#### MATE Applications
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `atril` | rawhide | f43 |
+| `engrampa` | rawhide | f43 |
+| `eom` | rawhide | f43 |
+
+#### Xorg Server + Drivers
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `xorg-x11-server` | rawhide | f43 | Core X server — benefits from f43 security patches |
+| `xorg-x11-xauth` | rawhide | f43 | |
+| `xorg-x11-xinit` | rawhide | f43 | |
+| `xorg-x11-drv-libinput` | rawhide | f43 | Input driver |
+| `xorg-x11-drv-amdgpu` | rawhide | f43 | AMD GPU |
+| `xorg-x11-drv-ati` | rawhide | f43 | ATI legacy |
+| `xorg-x11-drv-evdev` | rawhide | f43 | Event devices |
+| `xorg-x11-drv-nouveau` | rawhide | f43 | NVIDIA open |
+| `xorg-x11-drv-vmware` | rawhide | f43 | VMware guest |
+| `xorg-x11-drv-wacom` | rawhide | f43 | Wacom tablets |
+| `xorg-x11-drv-dummy` | rawhide | f43 | Headless |
+| `xorg-x11-drv-intel` | rawhide | f43 | Intel GPU |
+| `mesa-compat` | rawhide | f43 | Mesa compat libs |
+
+#### LightDM + Greeters
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `lightdm-gtk` | rawhide | f43 | GTK greeter |
+| `slick-greeter` | rawhide | f43 | Slick greeter |
+| `lightdm-settings` | rawhide | f43 | Settings GUI |
+
+#### Compiz (Desktop Effects)
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `compiz-bcop` | rawhide | f43 |
+| `libcompizconfig` | rawhide | f43 |
+| `compizconfig-python` | rawhide | f43 |
+| `compiz-plugins-main` | rawhide | f43 |
+| `compiz-plugins-extra` | rawhide | f43 |
+| `compiz-plugins-experimental` | rawhide | f43 |
+| `ccsm` | rawhide | f43 |
+| `simple-ccsm` | rawhide | f43 |
+| `fusion-icon` | rawhide | f43 |
+| `emerald` | rawhide | f43 |
+| `emerald-themes` | rawhide | f43 |
+
+#### Libraries + Dependencies
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `libXScrnSaver` | rawhide | f43 | X screensaver ext |
+| `libXvMC` | rawhide | f43 | Video MC ext |
+| `libsoup` | rawhide | f43 | HTTP library — benefits from f43 security patches |
+| `glibmm2.4` | rawhide | f43 | C++ GLib bindings |
+| `libsigc++20` | rawhide | f43 | Signal framework |
+| `pangomm` | rawhide | f43 | C++ Pango bindings |
+| `gtkmm3.0` | rawhide | f43 | C++ GTK3 bindings |
+| `atkmm` | rawhide | f43 | C++ ATK bindings |
+| `gtk-layer-shell` | rawhide | f43 | Wayland layer shell |
+| `gtk-murrine-engine` | rawhide | f43 | GTK2 theme engine |
+| `gnome-themes-extra` | rawhide | f43 | Adwaita GTK2 |
+| `libgnomekbd` | rawhide | f43 | Keyboard library |
+| `group-service` | rawhide | f43 | Group management |
+| `satyr` | rawhide | f43 | Stack traces |
+| `xfce4-dev-tools` | rawhide | f43 | Build dep for xapps |
+
+#### Extra Applications
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `blueman` | rawhide | f43 | Bluetooth manager |
+| `celluloid` | rawhide | f43 | Video player (mpv) |
+| `xapps` | rawhide | f43 | X-Apps library |
+| `xed` | rawhide | f43 | Text editor |
+| `xreader` | rawhide | f43 | Document viewer |
+| `gparted` | rawhide | f43 | Partition editor |
+| `dnfdragora` | rawhide | f43 | DNF GUI |
+| `gnome-abrt` | rawhide | f43 | Crash reporter |
+| `abrt` | rawhide | f43 | Bug reporting |
+| `gnome-backgrounds` | rawhide | f43 | Wallpapers |
+| `xscreensaver` | rawhide | f43 | Screensavers |
+| `system-config-language` | rawhide | f43 | Language settings |
+| `comps-extras` | rawhide | f43 | Package groups |
+| `multimedia-menus` | rawhide | f43 | Menu categories |
+| `fatsort` | rawhide | f43 | FAT filesystem sort |
+
+#### Python Libraries
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `python-xlib` | rawhide | f43 |
+| `python-pystray` | rawhide | f43 |
+| `python-manatools` | rawhide | f43 |
+| `python-gettext` | rawhide | f43 |
+| `python-xapp` | rawhide | f43 |
+| `python-cairosvg` | rawhide | f43 |
+| `python-cssselect2` | rawhide | f43 |
+| `python-tinycss2` | rawhide | f43 |
+
+#### libyui (DNFDragora dependency)
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `libyui-mga` | rawhide | f43 |
+| `libyui-gtk` | rawhide | f43 |
+| `libyui-mga-gtk` | rawhide | f43 |
+| `libyui-mga-ncurses` | rawhide | f43 |
+
+#### Misc Tools
+
+| Package | skip77 Branch | Our Branch |
+|---|---|---|
+| `appres` | rawhide | f43 |
+| `xvinfo` | rawhide | f43 |
+| `xinput` | rawhide | f43 |
+| `mathjax` | rawhide | f43 |
+
+#### Special Branch
+
+| Package | skip77 Branch | Our Branch | Notes |
+|---|---|---|---|
+| `dnf5` | epel10 | **epel10** | Already EL10-native — keep as-is! |
+
+### SCM Packages from skip77 GitLab (4 packages)
+
+These require forking skip77's GitLab repos or mirroring them:
+
+| Package | GitLab URL | Branch | Notes |
+|---|---|---|---|
+| `xorg-x11-drv-qxl` | `gitlab.com/SkipGrube/skips_el_extras/rpms/xorg-x11-drv-qxl.git` | rocky10 | QXL VM driver — custom patches for EL10 |
+| `lightdm` | `gitlab.com/SkipGrube/skips_el_extras/rpms/lightdm.git` | rawhide | LightDM — custom EL10 adjustments |
+| `mate-settings-daemon` | `gitlab.com/SkipGrube/skips_el_extras/rpms/mate-settings-daemon.git` | rawhide | Patched for EL10 |
+| `mintmenu` | `gitlab.com/SkipGrube/skips_el_extras/rpms/mintmenu.git` | r10 | Linux Mint menu for MATE |
+
+**Action required:**
+1. Fork these 4 repos to your own GitHub/GitLab
+2. Point COPR SCM sources to your forks
+3. Periodically sync upstream changes from skip77
+
+### Upload Packages (16 SRPMs — manual maintenance)
+
+These were uploaded as `.src.rpm` files. The COPR temporary URLs are **not permanent** —
+we must download the built SRPMs from the COPR build results.
+
+| Package | Version | Stability | Notes |
+|---|---|---|---|
+| `libxklavier` | 5.4-29.el10 | 🟢 Stable (dead upstream) | Keyboard layout lib |
+| `python-distutils-extra` | 2.39-36.el10 | 🟢 Stable | Python build helper |
+| `libXpresent` | 1.0.0-1.el10 | 🟢 Stable | X Present extension |
+| `mozo` | 1.28.0-1.el10 | 🟡 MATE release cycle | Menu editor |
+| `beesu` | 2.7-1.el10 | 🟢 Stable (dead upstream) | GUI privilege escalation |
+| `compiz` | 0.8.18-17.el10 | 🟡 Occasional updates | Core compositor |
+| `compiz-manager` | 0.7.0-24.el10 | 🟢 Stable | Compiz launcher |
+| `usermode` | 1.114-13.el10 | 🟢 Stable | User privilege helper |
+| `libreport` | 2.17.15-8.el10 | 🟡 Bugfix updates | Crash reporting lib |
+| `libyui` | 4.2.16-25.el10 | 🟡 Occasional updates | UI abstraction lib |
+| `t1lib` | 5.1.2-42.el10 | 🟢 Stable (dead upstream) | Type 1 font lib |
+| `libglade2` | 2.6.4-36.el10 | 🟢 Stable (dead upstream) | GTK2 UI builder |
+| `p7zip` | 16.02-33.el10 | 🟢 Stable (dead upstream) | 7-Zip implementation |
+| `network-manager-applet` | 1.36.0-100.el10 | 🟡 NM release cycle | NM tray applet |
+| `system-config-printer` | 1.5.18-16.el10 | 🟡 Occasional updates | Printer config |
+| `qadwaitadecorations` | 0.1.4-3.el10 | 🟢 Stable | Qt Adwaita decorations |
+
+**Stability legend:**
+- 🟢 Dead upstream or very stable — will likely never need updating
+- 🟡 Active upstream — check for updates every few months
+
+## Setup Instructions
+
+### Prerequisites
+
+1. **Fedora Account (FAS):** Create at https://accounts.fedoraproject.org/
+2. **COPR access:** Log in at https://copr.fedorainfracloud.org/ with your FAS account
+3. **copr-cli:** Install with `dnf install copr-cli` (or `pip install copr-cli`)
+4. **API token:** Get from https://copr.fedorainfracloud.org/api/ and save to `~/.config/copr`
+
+### Step 1: Create the COPR Project
+
+```bash
+copr-cli create \
+  --chroot rhel+epel-10-x86_64 \
+  --chroot rhel+epel-10-aarch64 \
+  --description "MATE Desktop for AlmaLinux/EL10 — fork of skip77/MateDesktop-EL10 for Querencia Linux" \
+  --instructions "See https://github.com/endegelaende/querencia-linux for usage" \
+  --repo "https://download.rockylinux.org/pub/rocky/\$releasever/devel/\$basearch/os/" \
+  --repo "https://dl.fedoraproject.org/pub/epel/\${releasever}z/Everything/\$basearch/" \
+  --unlisted-on-hp on \
+  endegelaende/MateDesktop-EL10
+```
+
+### Step 2: Run the Setup Script
+
+```bash
+# Downloads SRPMs, creates all package definitions, triggers builds
+./setup-copr-fork.sh
+```
+
+See `setup-copr-fork.sh` for the full automation script.
+
+### Step 3: Update the Querencia Linux Repo File
+
+Replace the skip77 repo with your own in `files/system/etc/yum.repos.d/`:
+
+```ini
+[copr:copr.fedorainfracloud.org:endegelaende:MateDesktop-EL10]
+name=COPR endegelaende/MateDesktop-EL10
+baseurl=https://download.copr.fedorainfracloud.org/results/endegelaende/MateDesktop-EL10/rhel+epel-10-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/endegelaende/MateDesktop-EL10/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+```
+
+### Step 4: Verify
+
+After all builds complete (~2-4 hours for initial build):
+
+```bash
+# Check build status
+copr-cli list-builds endegelaende/MateDesktop-EL10 | head -20
+
+# Test install in a container
+podman run --rm -it quay.io/almalinuxorg/almalinux:10 bash -c '
+  dnf install -y dnf-plugins-core epel-release
+  dnf config-manager --set-enabled crb
+  dnf copr enable endegelaende/MateDesktop-EL10 -y
+  dnf groupinstall -y "MATE-Desktop"
+  echo "SUCCESS: MATE installed from fork"
+'
+```
+
+## Maintenance
+
+### Scheduled Rebuilds (Recommended)
+
+Set up a GitHub Action that runs weekly to rebuild all SCM packages.
+This ensures we pick up any bugfix/security commits pushed to the `f43`
+branch by Fedora maintainers:
+
+```yaml
+# .github/workflows/copr-rebuild.yml
+name: COPR Weekly Rebuild
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Monday 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install copr-cli
+        run: pip install copr-cli
+      - name: Configure copr-cli
+        run: |
+          mkdir -p ~/.config
+          echo "${{ secrets.COPR_CONFIG }}" > ~/.config/copr
+      - name: Rebuild all SCM packages
+        run: ./copr-fork/rebuild-all.sh
+```
+
+### When a Build Fails
+
+1. Check if the `f43` branch spec requires a dependency not in EL10
+2. Try `f42` branch as fallback, then `f41`
+3. If all fail, the package may need a patch — check skip77's GitLab for EL10-specific fixes
+4. As last resort, download the working SRPM from skip77's COPR and upload manually
+5. When `f43` reaches EOL (~Dec 2026), bump default to `f44` and re-test all packages
+
+### Monitoring skip77's COPR
+
+Periodically check if skip77 adds new packages or updates uploaded SRPMs:
+
+```bash
+# Compare package lists
+curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=skip77&projectname=MateDesktop-EL10&limit=200" \
+  | jq -r '.items[].name' | sort > /tmp/skip77-packages.txt
+
+copr-cli list-packages endegelaende/MateDesktop-EL10 --output-format text-row \
+  | awk '{print $1}' | sort > /tmp/our-packages.txt
+
+diff /tmp/skip77-packages.txt /tmp/our-packages.txt
+```
+
+## Files in This Directory
+
+| File | Purpose |
+|---|---|
+| `README.md` | This documentation |
+| `setup-copr-fork.sh` | One-time setup: creates all packages in your COPR project |
+| `rebuild-all.sh` | Triggers rebuild of all SCM packages |
+| `download-srpms.sh` | Downloads all 16 upload SRPMs from skip77's COPR |
+| `packages.json` | Machine-readable package inventory with branch mappings |
+
+## Risk Assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| skip77 COPR goes offline | Low | 🔴 Critical | This fork |
+| f43 spec needs dep not in EL10 | Low | 🟡 Medium | Fall back to f42/f41 for that package |
+| f43 reaches EOL (Dec 2026) | Certain | 🟢 Low | Bump to f44, MATE specs are stable across releases |
+| EL10 major rebase breaks builds | Low | 🟡 Medium | Adjust branch per package, test after rebase |
+| New MATE release needs newer deps | Medium | 🟡 Medium | Stay on current version, don't chase upstream |
+| Upload SRPMs become outdated | Medium | 🟢 Low | Most are dead upstream; NM-applet matters most |
+| Fedora drops MATE entirely | Low (years) | 🔴 Critical | We have the SRPMs + specs, can self-host |
