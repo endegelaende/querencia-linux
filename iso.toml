@@ -1,7 +1,29 @@
+# bootc-image-builder ISO configuration for Querencia Linux
+# Anaconda graphical installer with post-install setup for MATE desktop
+
 [customizations.installer.kickstart]
 contents = """
+graphical
+
 %post --erroronfail --log=/root/anaconda-post.log
-bootc switch --mutate-in-place --transport registry <IMAGE_SIGNED> <UPDATE_IMAGE_REF>
+
+# Graphical target (LightDM + MATE)
+systemctl set-default graphical.target
+
+# Services aktivieren
+systemctl enable lightdm.service
+systemctl enable NetworkManager.service
+systemctl enable bluetooth.service
+systemctl enable fstrim.timer
+
+# LightDM runtime directories (bootc/ostree clears /var)
+mkdir -p /var/lib/lightdm-data
+mkdir -p /var/cache/lightdm
+mkdir -p /var/log/lightdm
+chown lightdm:lightdm /var/lib/lightdm-data
+chown lightdm:lightdm /var/cache/lightdm
+chown root:lightdm /var/log/lightdm
+chmod 0750 /var/log/lightdm
 
 %end
 """

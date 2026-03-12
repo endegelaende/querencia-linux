@@ -36,6 +36,25 @@ dnf install -y \
 
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
+# ---- LightDM runtime directories (needed on bootc/ostree where /var is empty) ----
+# Create tmpfiles.d config so systemd-tmpfiles recreates them every boot
+mkdir -p /etc/tmpfiles.d
+cat > /etc/tmpfiles.d/lightdm.conf <<'TMPFILES'
+# LightDM directories needed at runtime (bootc/ostree clears /var)
+d /var/lib/lightdm-data 0755 lightdm lightdm -
+d /var/cache/lightdm 0755 lightdm lightdm -
+d /var/log/lightdm 0750 root lightdm -
+TMPFILES
+
+# Also create them now for the build layer
+mkdir -p /var/lib/lightdm-data
+mkdir -p /var/cache/lightdm
+mkdir -p /var/log/lightdm
+chown lightdm:lightdm /var/lib/lightdm-data 2>/dev/null || true
+chown lightdm:lightdm /var/cache/lightdm 2>/dev/null || true
+chown root:lightdm /var/log/lightdm 2>/dev/null || true
+chmod 0750 /var/log/lightdm 2>/dev/null || true
+
 # Enable LightDM and graphical target
 systemctl enable lightdm
 systemctl set-default graphical.target
