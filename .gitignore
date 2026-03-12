@@ -1,3 +1,6 @@
+# Project context (local only, not for GitHub)
+CLAUDE.md
+
 # Build artifacts
 *.img
 *.iso
