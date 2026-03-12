@@ -1,0 +1,35 @@
+# Force LF line endings for all files (this is a Linux project)
+* text=auto eol=lf
+
+# Explicitly mark shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Config files
+*.conf text eol=lf
+*.repo text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.just text eol=lf
+*.pub text eol=lf
+
+# Makefile must use LF (and tabs)
+Makefile text eol=lf
+
+# Dockerfile
+Dockerfile text eol=lf
+
+# Markdown and text
+*.md text eol=lf
+*.txt text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.iso binary
+*.img binary
+*.raw binary
+*.qcow2 binary

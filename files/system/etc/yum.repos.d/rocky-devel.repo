@@ -1,0 +1,7 @@
+[rocky-devel]
+name=Rocky Linux 10 - Devel
+baseurl=https://dl.rockylinux.org/pub/rocky/10/devel/$basearch/os/
+gpgcheck=1
+gpgkey=https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-10
+enabled=1
+priority=200

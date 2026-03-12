@@ -1,0 +1,48 @@
+# Build artifacts
+*.img
+*.iso
+*.raw
+*.qcow2
+*.vmdk
+*.oci
+*.tar
+*.tar.gz
+*.tar.zst
+output/
+
+# Container build cache
+.buildcache/
+_build/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+\#*\#
+
+# OS-specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.code-workspace
+.project
+.settings/
+
+# Secrets -- NEVER commit!
+*.pem
+*.key
+*.env
+.env.*
+secrets/
+cosign.*
+
+# Logs
+*.log
+logs/
