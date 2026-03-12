@@ -44,7 +44,7 @@ The root filesystem is **read-only at runtime**. Software installation happens v
 
 **v1 (original):** Built on CentOS Stream 10 (`centos-bootc:stream10`) with a monolithic `Containerfile`. Custom CI/CD with manual Podman+ISO build steps.
 
-**v2 (current):** Rebuilt from scratch on **AlmaLinux 10** using the official Atomic Respin Template. Modular numbered scripts, multi-stage Dockerfile, `bootc container lint`, Cosign signing support, AlmaLinux `atomic-ci` reusable workflows. The skip77 MATE COPR works identically on AlmaLinux 10 (it targets `rhel+epel-10`, which is the same for all EL10 distros).
+**v2 (current):** Rebuilt from scratch on **AlmaLinux 10** using the official Atomic Respin Template. Modular numbered scripts, multi-stage Dockerfile, `bootc container lint`, Cosign signing support, AlmaLinux `atomic-ci` reusable workflows. The skip77 MATE COPR works identically on AlmaLinux 10 (it targets `rhel+epel-10`, which is the same for all EL10 distros). Added VM display drivers (QXL, VESA, spice-vdagent), LightDM runtime directory fixes for bootc/ostree, interactive Anaconda ISO installer, and a comprehensive COPR fork plan for supply-chain independence.
 
 ## Architecture
 
@@ -91,17 +91,20 @@ querencia-linux/
 ├── .github/
 │   ├── actions/config/action.yml   ← CI environment variables (registry, image name)
 │   └── workflows/build.yml         ← GitHub Actions pipeline (uses atomic-ci v11)
+├── copr-fork/                       ← COPR fork plan for supply-chain independence
+│   ├── README.md                    ← Strategy docs, package inventory, setup instructions
+│   └── packages.json                ← Machine-readable inventory of all 100 COPR packages
 ├── files/
 │   ├── scripts/                    ← Numbered build scripts (run in order by build.sh)
 │   │   ├── build.sh                ← Orchestrator: copies system files, runs *-*.sh scripts, cleanup
 │   │   ├── cleanup.sh              ← Final cleanup: dnf clean, /var + /boot reset, /usr/local writable
 │   │   ├── 10-repos.sh             ← EPEL, CRB, Rocky Devel, skip77 COPR, RPM Fusion
-│   │   ├── 20-mate-desktop.sh      ← MATE Desktop + LightDM + Xorg + Fonts + Locale
+│   │   ├── 20-mate-desktop.sh      ← MATE Desktop + LightDM + Xorg + Fonts + Locale + tmpfiles.d
 │   │   ├── 25-audio.sh             ← PipeWire + WirePlumber (user services)
 │   │   ├── 30-amd-gpu.sh           ← Mesa, Vulkan (RADV), VA-API, linux-firmware
 │   │   ├── 35-multimedia.sh        ← GStreamer + FFmpeg codecs (RPM Fusion)
 │   │   ├── 40-network.sh           ← NetworkManager, WiFi, OpenVPN, Bluetooth
-│   │   ├── 45-system-tools.sh      ← Firefox, gnome-disk-utility, htop, git, fastfetch, just
+│   │   ├── 45-system-tools.sh      ← Firefox, gnome-disk-utility, htop, git, VM drivers, wallpapers
 │   │   ├── 50-micromamba.sh         ← Micromamba binary to /usr/local/bin
 │   │   ├── 55-flatpak.sh           ← Flatpak + Flathub remote
 │   │   ├── 60-distrobox.sh         ← Distrobox + Podman
@@ -127,9 +130,9 @@ querencia-linux/
 │       └── usr/share/justfiles/
 │           └── custom.just                            ← ujust recipes (update, gpu, mamba, etc.)
 ├── Dockerfile                       ← Multi-stage build (scratch → almalinux-bootc:10)
-├── Makefile                         ← Local build targets (image, iso, qcow2, run-qemu-*)
-├── atomic-desktop.pub               ← AlmaLinux Atomic Desktop verification key
-├── iso.toml                         ← bootc-image-builder ISO configuration
+├── Makefile                         ← Local build targets (image, iso, qcow2, run-qemu-*, clean)
+├── almalinux-bootc.pub              ← AlmaLinux bootc base image verification key
+├── iso.toml                         ← bootc-image-builder ISO config (Anaconda kickstart)
 ├── .gitattributes                   ← Force LF line endings (Linux project built on Windows)
 ├── .gitignore                       ← Build artifacts, secrets, editor files
 ├── LICENSE                          ← MIT
@@ -198,12 +201,17 @@ The repo files for Rocky Devel and skip77 are placed by the `cp -avf system_file
 
 - `dnf groupinstall "MATE-Desktop"` — full MATE from skip77 COPR (includes Xorg, LightDM, Compiz)
 - Individual MATE packages installed with `|| true` fallback (may not all exist in COPR)
+- **`lightdm-gtk-greeter`** installed as fallback greeter (in case slick-greeter fails, e.g. in VMs)
 - Fonts: Noto Sans/Serif/Mono, Noto Emoji, Liberation, DejaVu
 - Locale: `glibc-langpack-en` + `glibc-langpack-de` (critical for ostree/bootc UTF-8 path handling)
 - `LANG=en_US.UTF-8` written to `/etc/locale.conf`
 - LightDM enabled, graphical target set as default
+- **tmpfiles.d config** for LightDM runtime directories (`/var/lib/lightdm-data`, `/var/cache/lightdm`, `/var/log/lightdm`) — required on bootc/ostree because `/var` is recreated empty on each boot
+- **Fallback `mate.desktop` xsession file** created if not already present — defensive measure for session detection
 
 **Why skip77 COPR?** CentOS Stream 10 / AlmaLinux 10 / RHEL 10 dropped Xorg and MATE from the base repos. The skip77 COPR rebuilds MATE + Xorg + LightDM for EL10. It builds for the `rhel+epel-10` chroot, which is binary-compatible across all EL10 distros.
+
+**Supply-chain risk:** The skip77 COPR is maintained by a single person. A COPR fork plan exists in `copr-fork/` — see the [COPR Fork Strategy](#copr-fork-strategy) section below.
 
 ### 25-audio.sh – PipeWire
 
@@ -244,7 +252,18 @@ From RPM Fusion. Each optional package installed individually with `|| true` bec
 
 ### 45-system-tools.sh – System Utilities
 
-Firefox, gnome-disk-utility, gnome-keyring, xdg-utils, xdg-user-dirs, bash-completion, vim, htop, wget, curl, git. Optional: fastfetch, just.
+Firefox, gnome-disk-utility, gnome-keyring, xdg-utils, xdg-user-dirs, xdg-user-dirs-gtk, bash-completion, vim, htop, wget, curl, git, almalinux-backgrounds. Optional: fastfetch, just.
+
+**VM display drivers** (all optional, installed with `|| true`):
+
+| Package | Purpose |
+|---|---|
+| `xorg-x11-drv-qxl` | QXL virtual GPU for QEMU/KVM guests |
+| `xorg-x11-drv-vesa` | Generic VESA fallback driver |
+| `xorg-x11-drv-fbdev` | Framebuffer fallback driver |
+| `spice-vdagent` | SPICE guest agent (clipboard, dynamic resolution) |
+
+These ensure the image works in VMs (QEMU, libvirt, virt-manager) without manual driver configuration.
 
 ### 50-micromamba.sh – Micromamba
 
@@ -269,8 +288,8 @@ Enables `fstrim.timer` for periodic SSD TRIM. Other services (LightDM, NetworkMa
 This is the largest script. It sets up:
 
 1. **XDG user directories** – English defaults (Desktop, Downloads, Documents, etc.)
-2. **Flatpak overrides** – Global DRI device access + GTK theming for sandboxed apps
-3. **Systemd presets** – Service enablement list for first boot
+2. **Flatpak overrides** – Global DRI device access + GTK theming (`GTK_THEME=BlueMenta`, `XCURSOR_THEME=default`, `XCURSOR_SIZE=24`)
+3. **Systemd presets** (`50-querencia-linux.preset`) – Service enablement list for first boot, includes `cups.socket` and `firewalld.service` (preset-only; these activate only if the packages are installed later)
 4. **ujust shortcut** – `/usr/local/bin/ujust` → `just --justfile /usr/share/justfiles/custom.just`
 5. **First-boot user service** – Runs once per user on first login:
    - Creates XDG user directories
@@ -279,7 +298,7 @@ This is the largest script. It sets up:
    - Creates `~/.config/querencia-setup-done` marker
 6. **MOTD** – Terminal welcome message + `/etc/issue.net`
 7. **Polkit rules** – wheel group can manage Flatpak without password
-8. **Sysctl tweaks** – `vm.swappiness=10`, inotify limits (524288 watches), BBR congestion control
+8. **Sysctl tweaks** – `vm.swappiness=10`, inotify limits (524288 watches), `net.core.default_qdisc=fq_codel`, `net.ipv4.tcp_congestion_control=bbr`
 9. **Bash aliases** – `ls --color=auto`, `ll`
 10. **dconf update** – Applies MATE defaults from `01-mate-defaults.conf`
 
@@ -385,6 +404,13 @@ Comprehensive ujust recipes. Categories:
 | **Micromamba** | `mamba-setup`, `mamba-install-tools`, `mamba-create`, `mamba-install`, `mamba-list`, `mamba-packages`, `mamba-update`, `mamba-backup`, `mamba-restore`, `mamba-backups`, `mamba-clean`, `mamba-python`, `mamba-node` |
 | **Multimedia** | `codec-check`, `codec-test` |
 
+**Notable recipe details:**
+- **`install-essentials`** installs Flatpaks: Bazaar (app store), Firefox, Thunderbird, LibreOffice, Calculator, Evince, Flatseal, Celluloid
+- **`mamba-install-tools`** creates a `tools` env with: ripgrep, fd-find, bat, eza, zoxide, fzf, delta, starship, jq, yq, tldr, bottom
+- **`mamba-python`** sets up Python 3.12 with pip, ipython, black, ruff, mypy
+- **`mamba-node`** sets up Node.js 22 with yarn
+- **`codec-test`** tries celluloid → mpv → xdg-open as fallback video players
+
 ## CI/CD Pipeline
 
 ### GitHub Actions (`.github/workflows/build.yml`)
@@ -401,10 +427,12 @@ Uses [AlmaLinux/atomic-ci](https://github.com/AlmaLinux/atomic-ci) v11 reusable 
 1. **set-env** – Sets registry, image name, platform variables
 2. **build-image** – Builds OCI image via `atomic-ci/build-image.yml`
 3. **test-image** – Smoke test: runs container, checks `bootc -V` and `/etc/os-release`
-4. **promote-image** – Tags as `latest`, version tags (only on `main`)
+4. **promote-image** – Tags as `latest`, major version, `redhat-version-id`, full version (only on `main`)
 5. **create-release** – Creates GitHub Release (only on `main`)
 
 **Guard:** `if: github.repository != 'AlmaLinux/atomic-respin-template'` prevents the template repo itself from building.
+
+**Security:** Uses pinned action SHAs (e.g. `actions/checkout@1af3b93b...`) and `concurrency` group with `cancel-in-progress: true` to avoid redundant builds. The `upstream-public-key` is `almalinux-bootc.pub`.
 
 ### Configuration (`.github/actions/config/action.yml`)
 
@@ -424,6 +452,33 @@ Uses [AlmaLinux/atomic-ci](https://github.com/AlmaLinux/atomic-ci) v11 reusable 
 | `ghcr.io/endegelaende/querencia-linux:latest` | Latest stable image |
 | `ghcr.io/endegelaende/querencia-linux:10` | Major version tag |
 | `ghcr.io/endegelaende/querencia-linux:<version>` | Specific version |
+
+## ISO Installer Configuration (`iso.toml`)
+
+The ISO is built with `bootc-image-builder` and uses a **kickstart-based Anaconda installer**:
+
+- **Graphical installer** (`graphical` mode) with DHCP networking
+- **Bootloader** args: `quiet splash`
+- **No preset partitioning** — the user chooses disk layout interactively
+- **`%post` script** that runs after installation:
+  - Sets `graphical.target`, enables `lightdm`, `NetworkManager`, `bluetooth`, `fstrim.timer`
+  - Creates LightDM runtime directories (same as tmpfiles.d in the image)
+  - Runs `dconf update` and `systemd-tmpfiles --create`
+  - Touches `/.autorelabel` for SELinux relabeling on first boot
+
+## Local Build (`Makefile`)
+
+| Target | Description |
+|---|---|
+| `make image` | Build the OCI container image with Podman |
+| `make iso` | Build bootable ISO installer (uses `bootc-image-builder`, sets `LIBREPO=False`) |
+| `make qcow2` | Build QCOW2 disk image for VM testing |
+| `make run-qemu-iso` | Boot ISO in QEMU (creates 20GB raw disk, 2 vCPUs, 4GB RAM, OVMF UEFI) |
+| `make run-qemu-qcow` | Boot QCOW2 in QEMU with snapshot (changes not persisted) |
+| `make run-qemu` | Boot raw disk directly in QEMU (no ISO, no snapshot) |
+| `make clean` | Remove `./output` directory |
+
+The ISO build uses `quay.io/centos-bootc/bootc-image-builder:latest` and strips `bootc switch` from the config for ISO mode. QEMU targets use OVMF UEFI firmware.
 
 ## Key Design Decisions
 
@@ -450,6 +505,7 @@ RHEL 10 / AlmaLinux 10 / CentOS Stream 10 removed Xorg from the base repos. MATE
 - Builds for `rhel+epel-10` chroot (works on all EL10 distros)
 - Is the only maintained source of MATE packages for EL10
 - Includes quality-of-life apps (Celluloid, DNFDragora, X-Apps)
+- **Supply-chain risk:** Single maintainer — see [COPR Fork Strategy](#copr-fork-strategy) below
 
 ### Why Rocky Devel repo?
 
@@ -534,8 +590,79 @@ These come from the AlmaLinux Atomic Respin Template and should be kept in sync 
 - `files/scripts/cleanup.sh` – Image layer cleanup
 - `files/scripts/90-signing.sh` – Cosign key setup
 - `files/scripts/91-image-info.sh` – VARIANT_ID for countme stats
-- `atomic-desktop.pub` – AlmaLinux Atomic Desktop verification key
+- `almalinux-bootc.pub` – AlmaLinux bootc base image verification key
 
-## Line Endings
+## COPR Fork Strategy
+
+The `copr-fork/` directory contains a complete plan for forking the skip77 COPR to ensure supply-chain independence. This is not yet implemented — it's a ready-to-execute plan.
+
+### Why Fork?
+
+The skip77/MateDesktop-EL10 COPR is maintained by a single person (Skip Grube, Rocky Linux contributor). If the repo goes offline, the Querencia Linux image can no longer be built. Forking gives us control over the build pipeline.
+
+### Package Inventory (100 packages)
+
+| Type | Count | Source | Auto-Update? |
+|---|---|---|---|
+| **SCM (Fedora)** | ~80 | `src.fedoraproject.org` Git branches | ✅ Yes (COPR scheduled rebuilds) |
+| **SCM (skip77 GitLab)** | 4 | skip77's custom patches for EL10 | ⚠️ Manual (fork the GitLab repos) |
+| **Upload (SRPMs)** | 16 | Manually uploaded `.src.rpm` files | ❌ Manual (mostly dead upstream) |
+
+### Branch Strategy: Pin to `f43`
+
+skip77 builds everything from `rawhide` (Fedora 45+), which can break against EL10 at any time. Our fork pins to **Fedora 43** (`f43`), the current stable Fedora release (EOL ~Dec 2026):
+
+- `f43` receives active security patches and bugfixes from Fedora maintainers
+- MATE specs are identical across f41/f42/f43 (only Mass Rebuild bumps differ)
+- If any `f43` spec breaks against EL10, fall back to `f42` for that package
+- When `f43` reaches EOL, bump to `f44`
+- Packages with an `epel10` branch (like `dnf5`) always use that instead
+
+**Priority:** `epel10` > `f43` > `f42` > `f41` > `rawhide`
+
+### Key Files
+
+- `copr-fork/README.md` – Full strategy, setup instructions, maintenance docs
+- `copr-fork/packages.json` – Machine-readable inventory of all 100 packages with source URLs, branch mappings, categories, and build order hints
+
+### 4 GitLab Packages Requiring Fork
+
+| Package | Purpose | skip77 Branch |
+|---|---|---|
+| `xorg-x11-drv-qxl` | QXL VM driver (custom EL10 patches) | `rocky10` |
+| `lightdm` | Display manager (EL10 adjustments) | `rawhide` |
+| `mate-settings-daemon` | Settings daemon (EL10 patches) | `rawhide` |
+| `mintmenu` | Linux Mint menu for MATE | `r10` |
+
+### 16 Upload SRPMs (Manual Maintenance)
+
+Mostly dead-upstream or stable packages: `libxklavier`, `libXpresent`, `beesu`, `compiz`, `compiz-manager`, `usermode`, `t1lib`, `libglade2`, `p7zip`, `python-distutils-extra`, `mozo`, `libreport`, `libyui`, `network-manager-applet`, `system-config-printer`, `qadwaitadecorations`. Of these, only `network-manager-applet`, `libreport`, and `system-config-printer` have active upstreams that warrant periodic checking.
+
+## Known Issues and Lessons Learned
+
+### LightDM on bootc/ostree
+
+LightDM expects `/var/lib/lightdm-data`, `/var/cache/lightdm`, and `/var/log/lightdm` to exist with correct permissions. On bootc systems, `/var` is recreated empty on each boot. **Fix:** systemd-tmpfiles.d config (created in `20-mate-desktop.sh`) and fallback directory creation in `iso.toml` post-install script.
+
+### slick-greeter in VMs
+
+slick-greeter can crash in VMs due to missing backgrounds or theme issues. **Fix:** `lightdm-gtk-greeter` is installed as fallback, and the slick-greeter config avoids mandatory background images.
+
+### DNS in bootc-image-builder
+
+When building ISOs on hosts using systemd-resolved (stub at `127.0.0.53`), osbuild sandboxes lose DNS. **Fixes:**
+- Use `--network=host` for the builder container
+- Set `LIBREPO=False` so bootc-image-builder downloads packages outside sandboxes
+- Or replace `/etc/resolv.conf` with the real upstream nameserver from `/run/systemd/resolve/resolv.conf`
+
+### GHCR Package Permissions
+
+If a GHCR package already exists under the same name (from a previous repo or manual push), CI pushes fail with `denied: permission_denied: write_package`. **Fix:** Delete the old GHCR package and let CI recreate it linked to the repository.
+
+### Disk Space for ISO Builds
+
+Building an ISO requires ~20–30 GB free disk space. On VMs with small root partitions, extend the LV before building (`pvresize` + `lvextend` + `xfs_growfs`).
+
+### Line Endings (Windows Development)
 
 This is a Linux project developed on Windows. `.gitattributes` enforces LF line endings for all text files. Shell scripts MUST use LF — CRLF will break them on Linux. Git is configured with `core.autocrlf=input` to normalize on commit.
