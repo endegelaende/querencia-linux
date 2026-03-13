@@ -40,6 +40,8 @@ dnf remove -y \
     xed \
     system-config-language \
     lightdm-settings \
+    mate-user-guide \
+    mate-menu \
     2>/dev/null || true
 
 # Additional MATE packages (may not all be in the group)
