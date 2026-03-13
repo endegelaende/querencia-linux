@@ -36,7 +36,7 @@ dnf install -y xz || true
 
 # Thumbnail support (Caja file manager previews)
 dnf install -y ffmpegthumbnailer || true
-dnf install -y evince-thumbnailer || true
+dnf install -y evince || true
 dnf install -y gdk-pixbuf2 || true
 
 # MATE PolicyKit agent (graphical password prompts for admin actions)

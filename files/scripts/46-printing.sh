@@ -7,7 +7,9 @@ dnf install -y \
     cups \
     cups-filters \
     cups-pk-helper \
-    system-config-printer
+    system-config-printer \
+    avahi \
+    nss-mdns
 
 # Extra printer drivers and PPD database (optional, not in all repos)
 dnf install -y gutenprint-cups || true
@@ -21,3 +23,5 @@ dnf install -y sane-backends-drivers-scanners || true
 
 # Socket-activated: CUPS only starts when a print job arrives or the UI connects
 systemctl enable cups.socket
+# mDNS/DNS-SD for automatic network printer discovery
+systemctl enable avahi-daemon.service

@@ -16,22 +16,12 @@ PICTURES=Pictures
 VIDEOS=Videos
 EOF
 
-# ---- Flatpak Overrides -- GPU access and theming ----------------------------
-mkdir -p /var/lib/flatpak/overrides
-cat > /var/lib/flatpak/overrides/global <<'EOF'
-[Context]
-devices=dri;
-filesystems=xdg-config/gtk-3.0:ro;xdg-config/gtk-4.0:ro;/usr/share/themes:ro;/usr/share/icons:ro;
-
-[Environment]
-GTK_THEME=BlueMenta
-XCURSOR_THEME=default
-XCURSOR_SIZE=24
-EOF
+# Flatpak overrides are applied per-user in the first-boot script below,
+# because /var/lib/flatpak/ gets wiped during the container build cleanup.
 
 # ---- Systemd Presets ---------------------------------------------------------
-mkdir -p /etc/systemd/system-preset
-cat > /etc/systemd/system-preset/50-querencia-linux.preset <<'EOF'
+mkdir -p /usr/lib/systemd/system-preset
+cat > /usr/lib/systemd/system-preset/50-querencia-linux.preset <<'EOF'
 enable lightdm.service
 enable NetworkManager.service
 enable bluetooth.service
@@ -42,10 +32,9 @@ EOF
 
 # ---- ujust Shortcut ----------------------------------------------------------
 JUSTFILE_SRC="/usr/share/justfiles/custom.just"
-JUSTFILE_LINK="/usr/local/bin/ujust"
+JUSTFILE_LINK="/usr/bin/ujust"
 
 if [ -f "${JUSTFILE_SRC}" ]; then
-    mkdir -p /usr/local/bin
     cat > "${JUSTFILE_LINK}" <<'UJUST'
 #!/usr/bin/env bash
 exec just --justfile /usr/share/justfiles/custom.just "$@"
@@ -54,8 +43,8 @@ UJUST
 fi
 
 # ---- First-Boot Service (per user) ------------------------------------------
-mkdir -p /etc/systemd/user
-cat > /etc/systemd/user/querencia-first-boot-setup.service <<'EOF'
+mkdir -p /usr/lib/systemd/user
+cat > /usr/lib/systemd/user/querencia-first-boot-setup.service <<'EOF'
 [Unit]
 Description=Querencia Linux -- First-boot setup for new user
 ConditionPathExists=!%h/.config/querencia-setup-done
@@ -94,6 +83,20 @@ file://${HOME}/Videos Videos
 BOOKMARKS
 fi
 
+# Apply Flatpak overrides (GPU access + BlueMenta theming)
+if command -v flatpak &>/dev/null; then
+    flatpak override --user \
+        --device=dri \
+        --filesystem=xdg-config/gtk-3.0:ro \
+        --filesystem=xdg-config/gtk-4.0:ro \
+        --filesystem=/usr/share/themes:ro \
+        --filesystem=/usr/share/icons:ro \
+        --env=GTK_THEME=BlueMenta \
+        --env=XCURSOR_THEME=default \
+        --env=XCURSOR_SIZE=24 \
+        2>/dev/null || true
+fi
+
 # Add Flathub remote for user and install Warehouse (Flatpak store)
 if command -v flatpak &>/dev/null; then
     flatpak remote-add --if-not-exists --user flathub \
@@ -127,7 +130,8 @@ chmod +x /usr/libexec/querencia-first-boot
 systemctl --global enable querencia-first-boot-setup.service 2>/dev/null || true
 
 # ---- Auto-Update Timer -------------------------------------------------------
-cat > /etc/systemd/system/querencia-auto-update.timer <<'EOF'
+mkdir -p /usr/lib/systemd/system
+cat > /usr/lib/systemd/system/querencia-auto-update.timer <<'EOF'
 [Unit]
 Description=Querencia Linux -- Automatic image update check
 
@@ -141,7 +145,7 @@ RandomizedDelaySec=30min
 WantedBy=timers.target
 EOF
 
-cat > /etc/systemd/system/querencia-auto-update.service <<'EOF'
+cat > /usr/lib/systemd/system/querencia-auto-update.service <<'EOF'
 [Unit]
 Description=Querencia Linux -- Automatic image update
 After=network-online.target
@@ -237,8 +241,8 @@ MOTD
 cp /etc/motd /etc/issue.net
 
 # ---- Polkit Rules (wheel group can manage Flatpak) ---------------------------
-mkdir -p /etc/polkit-1/rules.d
-cat > /etc/polkit-1/rules.d/50-querencia-linux.rules <<'POLKIT'
+mkdir -p /usr/lib/polkit-1/rules.d
+cat > /usr/lib/polkit-1/rules.d/50-querencia-linux.rules <<'POLKIT'
 polkit.addRule(function(action, subject) {
     if ((action.id == "org.freedesktop.Flatpak.appstream-update" ||
          action.id == "org.freedesktop.Flatpak.runtime-install" ||
@@ -251,8 +255,8 @@ polkit.addRule(function(action, subject) {
 POLKIT
 
 # ---- Sysctl Tweaks (desktop-optimized) --------------------------------------
-mkdir -p /etc/sysctl.d
-cat > /etc/sysctl.d/99-querencia-linux-desktop.conf <<'SYSCTL'
+mkdir -p /usr/lib/sysctl.d
+cat > /usr/lib/sysctl.d/99-querencia-linux-desktop.conf <<'SYSCTL'
 # ZRAM-optimized swappiness: higher value is better with compressed RAM swap.
 # With ZRAM there is no disk penalty, so the kernel should swap early to ZRAM
 # rather than evicting file caches. 180 is the recommended value for ZRAM

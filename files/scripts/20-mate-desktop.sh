@@ -10,7 +10,7 @@ dnf groupinstall -y "MATE-Desktop"
 # dnfdragora is a graphical DNF frontend — on a bootc image the rootfs is read-only,
 # so dnf install does nothing. It also pulls in libyui, python-manatools, etc.
 # Remove it and its entire dependency chain if they got pulled in by the group.
-dnf remove -y dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools \
+dnf remove -y --noautoremove dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools \
     libyui libyui-mga libyui-gtk libyui-mga-gtk libyui-mga-ncurses \
     2>/dev/null || true
 
@@ -18,7 +18,7 @@ dnf remove -y dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools
 # On an atomic/immutable system, GUI apps belong in Flatpak, not the base image.
 # Only Firefox stays (needs system integration). MATE core tools (atril, pluma,
 # engrampa, eom, mate-calc, mate-terminal, mate-screenshot, mozo) are kept.
-dnf remove -y \
+dnf remove -y --noautoremove \
     thunderbird \
     filezilla libfilezilla \
     brasero brasero-libs \

@@ -15,6 +15,7 @@ dnf upgrade -y $(dnf repoquery --installed --qf '%{name}' --whatprovides epel-re
 # Rocky Devel repo (build deps that CentOS Stream / AlmaLinux don't ship)
 # and winonaoctober MATE COPR -- both are in our system files
 # (copied by build.sh before this script runs)
+dnf config-manager --set-enabled rocky-devel
 
 # RPM Fusion Free + Nonfree (for multimedia codecs)
 dnf install -y \

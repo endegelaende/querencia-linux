@@ -6,6 +6,7 @@ dnf install -y \
     NetworkManager \
     NetworkManager-wifi \
     NetworkManager-openvpn \
+    NetworkManager-openvpn-gnome \
     network-manager-applet \
     bluez \
     blueman \

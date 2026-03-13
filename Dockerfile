@@ -13,6 +13,7 @@ FROM scratch AS ctx
 COPY files/system /system_files/
 COPY --chmod=0755 files/scripts /build_files/
 COPY *.pub /keys/
+COPY assets /assets/
 
 # Base Image: AlmaLinux 10 bootc (no desktop -- we add MATE ourselves)
 FROM quay.io/almalinuxorg/almalinux-bootc:10
