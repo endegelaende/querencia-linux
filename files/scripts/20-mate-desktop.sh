@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Querencia Linux -- MATE Desktop Environment
-# From skip77/MateDesktop-EL10 COPR (provides MATE + Xorg + LightDM for EL10)
+# From winonaoctober/MateDesktop-EL10 COPR (provides MATE + Xorg + LightDM for EL10)
 set -xeuo pipefail
 
 # Install the full MATE desktop group (includes Xorg, LightDM, Compiz)
@@ -40,10 +40,13 @@ dnf install -y \
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
 # ---- LightDM runtime directories (needed on bootc/ostree where /var is empty) ----
-# Create tmpfiles.d config so systemd-tmpfiles recreates them every boot
-mkdir -p /etc/tmpfiles.d
-cat > /etc/tmpfiles.d/lightdm.conf <<'TMPFILES'
-# LightDM directories needed at runtime (bootc/ostree clears /var)
+# Create tmpfiles.d config so systemd-tmpfiles recreates them every boot.
+# Use /usr/lib/tmpfiles.d/ (immutable, survives cleanup.sh which wipes /var and /etc changes).
+# Use a unique filename to avoid being overwritten by the lightdm package's own lightdm.conf
+# (which only creates /run/lightdm).
+mkdir -p /usr/lib/tmpfiles.d
+cat > /usr/lib/tmpfiles.d/lightdm-querencia.conf <<'TMPFILES'
+# Querencia Linux: LightDM directories needed at runtime (bootc/ostree clears /var)
 d /var/lib/lightdm-data 0755 lightdm lightdm -
 d /var/cache/lightdm 0755 lightdm lightdm -
 d /var/log/lightdm 0750 root lightdm -
