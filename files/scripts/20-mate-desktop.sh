@@ -56,6 +56,10 @@ dnf install -y \
     glibc-langpack-zh \
     glibc-langpack-ko
 
+# Neutral default locale for the image build.
+# The Anaconda installer overwrites /etc/locale.conf and /etc/vconsole.conf
+# with the user's language and keyboard choice — do NOT hardcode de_DE or
+# any specific keyboard layout here.
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
 # ---- LightDM runtime directories (needed on bootc/ostree where /var is empty) ----
