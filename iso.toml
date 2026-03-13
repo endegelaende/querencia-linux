@@ -6,6 +6,13 @@ contents = """
 # Interactive graphical installer
 graphical
 
+# Language and keyboard: use defaults but let user change in the installer
+lang en_US.UTF-8 --addsupport=de_DE.UTF-8
+keyboard --vckeymap=de --xlayouts='de','us'
+
+# Timezone: default to Europe/Berlin, let user change
+timezone Europe/Berlin --utc
+
 # Network: activate DHCP so Anaconda has connectivity
 network --bootproto=dhcp --activate --onboot=yes
 
@@ -14,6 +21,12 @@ bootloader --append="quiet splash"
 
 # Do NOT preset partitioning -- let user choose
 # (Anaconda will prompt for disk selection and partitioning)
+
+# Show all interactive spokes (language, keyboard, timezone, partitioning)
+%anaconda
+pwpolicy root --minlen=8 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+%end
 
 %post --erroronfail --log=/root/anaconda-post.log
 
