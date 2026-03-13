@@ -47,10 +47,16 @@ echo "LANG=en_US.UTF-8" > /etc/locale.conf
 mkdir -p /usr/lib/tmpfiles.d
 cat > /usr/lib/tmpfiles.d/lightdm-querencia.conf <<'TMPFILES'
 # Querencia Linux: LightDM directories needed at runtime (bootc/ostree clears /var)
+d /var/lib/lightdm 0750 lightdm lightdm -
 d /var/lib/lightdm-data 0755 lightdm lightdm -
 d /var/cache/lightdm 0755 lightdm lightdm -
 d /var/log/lightdm 0750 root lightdm -
 TMPFILES
+
+# Remove slick-greeter override (crashes with GPU passthrough and some VMs).
+# The 90-slick-greeter.conf from the slick-greeter package overrides our
+# lightdm.conf setting of greeter-session=lightdm-gtk-greeter.
+rm -f /usr/share/lightdm/lightdm.conf.d/90-slick-greeter.conf
 
 # Also create them now for the build layer
 mkdir -p /var/lib/lightdm-data
