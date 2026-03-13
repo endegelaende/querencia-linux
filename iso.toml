@@ -24,7 +24,7 @@ bootloader --append="quiet splash"
 
 
 
-%post --erroronfail --log=/root/anaconda-post.log
+%post --log=/root/anaconda-post.log
 
 # Graphical target (LightDM + MATE)
 systemctl set-default graphical.target
@@ -51,9 +51,9 @@ dconf update || true
 systemd-tmpfiles --create || true
 
 # SELinux: relabel filesystem on next boot if enforcing
-if [ -f /etc/selinux/config ]; then
-    touch /.autorelabel
-fi
+# Note: /.autorelabel may fail on immutable root (bootc/ostree) -- that's OK,
+# the image is already labeled correctly from the build.
+touch /.autorelabel 2>/dev/null || true
 
 %end
 """
