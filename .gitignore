@@ -49,3 +49,7 @@ cosign.*
 # Logs
 *.log
 logs/
+
+# COPR fork setup
+copr-fork/srpms/
+copr-fork/setup-copr-fork.log

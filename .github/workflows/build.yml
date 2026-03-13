@@ -8,6 +8,9 @@ on:
       - "main"
     paths-ignore:
       - "**/README.md"
+      - "CLAUDE.md"
+      - "LICENSE"
+      - "copr-fork/**"
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * 1"
@@ -112,7 +115,7 @@ jobs:
   create-release:
     name: Create Release
     needs: [set-env, build-image, test-image, promote-image]
-    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && needs.set-env.outputs.IS_SIGNED == 'true' }}
     uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v11
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"

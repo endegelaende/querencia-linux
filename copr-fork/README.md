@@ -337,7 +337,7 @@ copr-cli create \
   --repo "https://download.rockylinux.org/pub/rocky/\$releasever/devel/\$basearch/os/" \
   --repo "https://dl.fedoraproject.org/pub/epel/\${releasever}z/Everything/\$basearch/" \
   --unlisted-on-hp on \
-  endegelaende/MateDesktop-EL10
+  winonaoctober/MateDesktop-EL10
 ```
 
 ### Step 2: Run the Setup Script
@@ -354,13 +354,13 @@ See `setup-copr-fork.sh` for the full automation script.
 Replace the skip77 repo with your own in `files/system/etc/yum.repos.d/`:
 
 ```ini
-[copr:copr.fedorainfracloud.org:endegelaende:MateDesktop-EL10]
-name=COPR endegelaende/MateDesktop-EL10
-baseurl=https://download.copr.fedorainfracloud.org/results/endegelaende/MateDesktop-EL10/rhel+epel-10-$basearch/
+[copr:copr.fedorainfracloud.org:winonaoctober:MateDesktop-EL10]
+name=COPR winonaoctober/MateDesktop-EL10
+baseurl=https://download.copr.fedorainfracloud.org/results/winonaoctober/MateDesktop-EL10/rhel+epel-10-$basearch/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=1
-gpgkey=https://download.copr.fedorainfracloud.org/results/endegelaende/MateDesktop-EL10/pubkey.gpg
+gpgkey=https://download.copr.fedorainfracloud.org/results/winonaoctober/MateDesktop-EL10/pubkey.gpg
 repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
@@ -372,13 +372,13 @@ After all builds complete (~2-4 hours for initial build):
 
 ```bash
 # Check build status
-copr-cli list-builds endegelaende/MateDesktop-EL10 | head -20
+copr-cli list-builds winonaoctober/MateDesktop-EL10 | head -20
 
 # Test install in a container
 podman run --rm -it quay.io/almalinuxorg/almalinux:10 bash -c '
   dnf install -y dnf-plugins-core epel-release
   dnf config-manager --set-enabled crb
-  dnf copr enable endegelaende/MateDesktop-EL10 -y
+  dnf copr enable winonaoctober/MateDesktop-EL10 -y
   dnf groupinstall -y "MATE-Desktop"
   echo "SUCCESS: MATE installed from fork"
 '
@@ -432,7 +432,7 @@ Periodically check if skip77 adds new packages or updates uploaded SRPMs:
 curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=skip77&projectname=MateDesktop-EL10&limit=200" \
   | jq -r '.items[].name' | sort > /tmp/skip77-packages.txt
 
-copr-cli list-packages endegelaende/MateDesktop-EL10 --output-format text-row \
+copr-cli list-packages winonaoctober/MateDesktop-EL10 --output-format text-row \
   | awk '{print $1}' | sort > /tmp/our-packages.txt
 
 diff /tmp/skip77-packages.txt /tmp/our-packages.txt

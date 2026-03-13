@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "_comment": "COPR fork package inventory for endegelaende/MateDesktop-EL10",
+  "_comment": "COPR fork package inventory for winonaoctober/MateDesktop-EL10",
   "_source": "https://copr.fedorainfracloud.org/coprs/skip77/MateDesktop-EL10/",
   "_strategy": "Pin to f43 (current stable Fedora, EOL ~Dec 2026) for EL10 compatibility. Use epel10 when available. f43 gets active security/bugfix patches from Fedora maintainers unlike EOL branches.",
   "project": {
-    "owner": "endegelaende",
+    "owner": "winonaoctober",
     "name": "MateDesktop-EL10",
     "chroots": ["rhel+epel-10-x86_64", "rhel+epel-10-aarch64"],
     "additional_repos": [
