@@ -1,17 +1,10 @@
 # bootc-image-builder ISO configuration for Querencia Linux
-# Interactive Anaconda installer with language, keyboard and network selection
+# Interactive Anaconda installer with language, keyboard and timezone selection
 
 [customizations.installer.kickstart]
 contents = """
 # Interactive graphical installer
 graphical
-
-# Language and keyboard: use defaults but let user change in the installer
-lang en_US.UTF-8 --addsupport=de_DE.UTF-8
-keyboard --vckeymap=de --xlayouts='de','us'
-
-# Timezone: default to Europe/Berlin, let user change
-timezone Europe/Berlin --utc
 
 # Network: activate DHCP so Anaconda has connectivity
 network --bootproto=dhcp --activate --onboot=yes
@@ -22,6 +15,9 @@ bootloader --append="quiet splash"
 # Do NOT preset partitioning -- let user choose
 # (Anaconda will prompt for disk selection and partitioning)
 
+# No lang/keyboard/timezone directives -- let the user choose interactively
+# via the Anaconda Localization and Timezone modules enabled below.
+
 # No %post needed -- everything is already configured in the bootc image:
 #   - Services enabled: lightdm, NetworkManager, bluetooth, fstrim.timer, etc.
 #   - LightDM dirs: created by tmpfiles.d/lightdm.conf on every boot
@@ -29,3 +25,14 @@ bootloader --append="quiet splash"
 #   - SELinux labels: correct from the container build
 #   - graphical.target: set as default in the image
 """
+
+# Enable Anaconda modules for interactive language, keyboard and timezone selection.
+# These are NOT enabled by default for bootc ISOs.
+[customizations.installer.modules]
+enable = [
+  "org.fedoraproject.Anaconda.Modules.Localization",
+  "org.fedoraproject.Anaconda.Modules.Timezone",
+]
+
+[customizations.iso]
+volume_id = "QuerenciaLinux"
