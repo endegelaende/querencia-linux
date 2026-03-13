@@ -22,38 +22,10 @@ bootloader --append="quiet splash"
 # Do NOT preset partitioning -- let user choose
 # (Anaconda will prompt for disk selection and partitioning)
 
-
-
-%post --log=/root/anaconda-post.log
-
-# Graphical target (LightDM + MATE)
-systemctl set-default graphical.target
-
-# Enable services
-systemctl enable lightdm.service
-systemctl enable NetworkManager.service
-systemctl enable bluetooth.service
-systemctl enable fstrim.timer
-
-# LightDM runtime directories (bootc/ostree clears /var on first boot)
-mkdir -p /var/lib/lightdm-data
-mkdir -p /var/cache/lightdm
-mkdir -p /var/log/lightdm
-chown lightdm:lightdm /var/lib/lightdm-data
-chown lightdm:lightdm /var/cache/lightdm
-chown root:lightdm /var/log/lightdm
-chmod 0750 /var/log/lightdm
-
-# Apply dconf MATE defaults (themes, fonts, terminal colors)
-dconf update || true
-
-# Create all tmpfiles.d entries
-systemd-tmpfiles --create || true
-
-# SELinux: relabel filesystem on next boot if enforcing
-# Note: /.autorelabel may fail on immutable root (bootc/ostree) -- that's OK,
-# the image is already labeled correctly from the build.
-touch /.autorelabel 2>/dev/null || true
-
-%end
+# No %post needed -- everything is already configured in the bootc image:
+#   - Services enabled: lightdm, NetworkManager, bluetooth, fstrim.timer, etc.
+#   - LightDM dirs: created by tmpfiles.d/lightdm.conf on every boot
+#   - dconf defaults: baked into the image by build scripts
+#   - SELinux labels: correct from the container build
+#   - graphical.target: set as default in the image
 """
