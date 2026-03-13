@@ -14,6 +14,34 @@ dnf remove -y dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools
     libyui libyui-mga libyui-gtk libyui-mga-gtk libyui-mga-ncurses \
     2>/dev/null || true
 
+# ---- Remove bloat apps pulled in by the MATE-Desktop group -------------------
+# On an atomic/immutable system, GUI apps belong in Flatpak, not the base image.
+# Only Firefox stays (needs system integration). MATE core tools (atril, pluma,
+# engrampa, eom, mate-calc, mate-terminal, mate-screenshot, mozo) are kept.
+dnf remove -y \
+    thunderbird \
+    filezilla libfilezilla \
+    brasero brasero-libs \
+    celluloid \
+    simple-scan \
+    xreader xreader-libs xreader-data \
+    gnome-software gnome-software-fedora-langpacks \
+    gnome-abrt abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops \
+        abrt-addon-vmcore abrt-addon-xorg abrt-dbus abrt-desktop abrt-gui \
+        abrt-gui-libs abrt-libs python3-abrt python3-abrt-addon \
+    blivet-gui blivet-gui-runtime \
+    gparted \
+    dconf-editor \
+    gucharmap gucharmap-libs \
+    seahorse \
+    xscreensaver-base xscreensaver-extras xscreensaver-extras-gss \
+        xscreensaver-gl-base xscreensaver-gl-extras xscreensaver-gl-extras-gss \
+    yelp yelp-libs yelp-tools yelp-xsl \
+    xed \
+    system-config-language \
+    lightdm-settings \
+    2>/dev/null || true
+
 # Additional MATE packages (may not all be in the group)
 dnf install -y mate-applets || true
 dnf install -y mate-media || true
