@@ -81,6 +81,19 @@ if command -v xdg-user-dirs-update &>/dev/null; then
     xdg-user-dirs-update
 fi
 
+# Set up default Caja bookmarks (sidebar shortcuts)
+BOOKMARKS_FILE="${HOME}/.config/gtk-3.0/bookmarks"
+if [ ! -f "${BOOKMARKS_FILE}" ]; then
+    mkdir -p "${HOME}/.config/gtk-3.0"
+    cat > "${BOOKMARKS_FILE}" <<BOOKMARKS
+file://${HOME}/Documents Documents
+file://${HOME}/Downloads Downloads
+file://${HOME}/Pictures Pictures
+file://${HOME}/Music Music
+file://${HOME}/Videos Videos
+BOOKMARKS
+fi
+
 # Add Flathub remote for user and install Warehouse (Flatpak store)
 if command -v flatpak &>/dev/null; then
     flatpak remote-add --if-not-exists --user flathub \
@@ -157,13 +170,15 @@ echo "=== $(date -Iseconds) ==="
 IMAGE_UPDATED=false
 
 # Stage new bootc image (applied on next reboot)
-if bootc upgrade --check 2>/dev/null | grep -q "Update available"; then
-    echo "New image available, staging update..."
-    bootc upgrade
-    echo "Image staged. Will apply on next reboot."
+# bootc upgrade: exit 0 = update staged, non-zero = already current or error
+echo "Checking for bootc image updates..."
+bootc upgrade 2>&1 || rc=$?
+rc=${rc:-0}
+if [ "${rc}" -eq 0 ]; then
+    echo "New image staged. Will apply on next reboot."
     IMAGE_UPDATED=true
 else
-    echo "System image is up to date."
+    echo "No update available (bootc exit code ${rc})."
 fi
 
 # Update Flatpak apps
@@ -238,8 +253,11 @@ POLKIT
 # ---- Sysctl Tweaks (desktop-optimized) --------------------------------------
 mkdir -p /etc/sysctl.d
 cat > /etc/sysctl.d/99-querencia-linux-desktop.conf <<'SYSCTL'
-# Reduce swappiness (desktops benefit from keeping more in RAM)
-vm.swappiness = 10
+# ZRAM-optimized swappiness: higher value is better with compressed RAM swap.
+# With ZRAM there is no disk penalty, so the kernel should swap early to ZRAM
+# rather than evicting file caches. 180 is the recommended value for ZRAM
+# (kernel 5.8+ supports 0-200 range; Fedora/ChromeOS use 180).
+vm.swappiness = 180
 # Increase inotify watches (needed for IDEs, file managers, etc.)
 fs.inotify.max_user_watches = 524288
 fs.inotify.max_user_instances = 1024

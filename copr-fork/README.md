@@ -93,185 +93,185 @@ our branch choice.
 
 | Category | Count | Source | Auto-Update? |
 |---|---|---|---|
-| SCM (Fedora src.fedoraproject.org) | ~80 | Git branches | ✅ Yes (COPR auto-rebuild or scheduled) |
+| SCM (Fedora src.fedoraproject.org) | 108 (102 active, 6 deprecated) | Git branches | ✅ Yes (COPR auto-rebuild or scheduled) |
 | SCM (skip77 GitLab) | 4 | skip77's patches | ⚠️ Manual (fork the GitLab repos) |
-| Upload (SRPMs) | 16 | Manual uploads | ❌ Manual (mostly stable/legacy) |
+| Upload (SRPMs) | 16 (1 deprecated) | Manual uploads | ❌ Manual (mostly stable/legacy) |
+| **Total** | **128** | | |
 
 ### SCM Packages from Fedora (auto-updatable)
 
-These point to `src.fedoraproject.org` and can be switched from `rawhide` → `f43`:
+These point to `src.fedoraproject.org` and are pinned to our chosen branch (default `f43`):
 
 #### MATE Desktop Core
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `mate-common` | rawhide | f43 | Build macros |
-| `mate-desktop` | rawhide | f43 | Core library |
-| `mate-menus` | rawhide | f43 | Menu system |
-| `mate-menu` | rawhide | f43 | Advanced menu |
-| `mate-panel` | rawhide | f43 | Panel |
-| `mate-session-manager` | rawhide | f43 | Session manager |
-| `mate-settings-daemon` | rawhide¹ | f43 | Settings daemon |
-| `mate-control-center` | rawhide | f43 | Control center |
-| `mate-polkit` | rawhide | f43 | PolicyKit agent |
-| `mate-backgrounds` | rawhide | f43 | Wallpapers |
-| `mate-icon-theme` | rawhide | f43 | Icons |
-| `mate-themes` | rawhide | f43 | GTK themes |
-| `mate-media` | rawhide | f43 | Volume control |
-| `mate-notification-daemon` | rawhide | f43 | Notifications |
-| `mate-power-manager` | rawhide | f43 | Power management |
-| `mate-screensaver` | rawhide | f43 | Screen lock |
-| `mate-system-monitor` | rawhide | f43 | Task manager |
-| `mate-terminal` | rawhide | f43 | Terminal emulator |
-| `mate-calc` | rawhide | f43 | Calculator |
-| `mate-utils` | rawhide | f43 | Utilities |
-| `mate-applets` | rawhide | f43 | Panel applets |
-| `mate-sensors-applet` | rawhide | f43 | Hardware sensors |
-| `mate-user-guide` | rawhide | f43 | Documentation |
-| `mate-user-admin` | rawhide | f43 | User management |
-| `libmatekbd` | rawhide | f43 | Keyboard library |
-| `libmatemixer` | rawhide | f43 | Audio mixer library |
-| `libmateweather` | rawhide² | f43 | Weather library |
-| `marco` | rawhide | f43 | Window manager |
-
-> ¹ skip77 sources `mate-settings-daemon` from his GitLab, see "GitLab Packages" below
-> ² `libmateweather` uses `distgit` source type (functionally same as SCM)
+| Package | Branch | Notes |
+|---|---|---|
+| `mate-common` | f43 | Build macros |
+| `mate-desktop` | f43 | Core library |
+| `mate-menus` | f43 | Menu system |
+| `mate-menu` | f43 | Advanced menu |
+| `mate-panel` | f43 | Panel |
+| `mate-session-manager` | f43 | Session manager |
+| `mate-settings-daemon` | f43 | Settings daemon |
+| `mate-control-center` | f43 | Control center |
+| `mate-polkit` | f43 | PolicyKit agent |
+| `mate-backgrounds` | f43 | Wallpapers |
+| `mate-icon-theme` | f43 | Icons |
+| `mate-themes` | f43 | GTK themes |
+| `mate-media` | f43 | Volume control |
+| `mate-notification-daemon` | f43 | Notifications |
+| `mate-power-manager` | f43 | Power management |
+| `mate-screensaver` | f43 | Screen lock |
+| `mate-system-monitor` | f43 | Task manager |
+| `mate-terminal` | f43 | Terminal emulator |
+| `mate-calc` | f43 | Calculator |
+| `mate-utils` | f43 | Utilities |
+| `mate-applets` | f43 | Panel applets |
+| `mate-sensors-applet` | f43 | Hardware sensors |
+| `mate-user-guide` | f43 | Documentation |
+| `mate-user-admin` | f43 | User management |
+| `libmatekbd` | f43 | Keyboard library |
+| `libmatemixer` | f43 | Audio mixer library |
+| `libmateweather` | f43 | Weather library |
+| `marco` | f43 | Window manager |
 
 #### Caja (File Manager)
 
-| Package | skip77 Branch | Our Branch |
-|---|---|---|
-| `caja` | rawhide | f43 |
-| `caja-extensions` | rawhide | f43 |
-| `caja-actions` | rawhide | f43 |
-| `python-caja` | rawhide | f43 |
+| Package | Branch |
+|---|---|
+| `caja` | f43 |
+| `caja-extensions` | f43 |
+| `caja-actions` | f43 |
+| `python-caja` | f43 |
 
 #### MATE Applications
 
-| Package | skip77 Branch | Our Branch |
-|---|---|---|
-| `atril` | rawhide | f43 |
-| `engrampa` | rawhide | f43 |
-| `eom` | rawhide | f43 |
+| Package | Branch |
+|---|---|
+| `atril` | f43 |
+| `engrampa` | f43 |
+| `eom` | f43 |
 
 #### Xorg Server + Drivers
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `xorg-x11-server` | rawhide | f43 | Core X server — benefits from f43 security patches |
-| `xorg-x11-xauth` | rawhide | f43 | |
-| `xorg-x11-xinit` | rawhide | f43 | |
-| `xorg-x11-drv-libinput` | rawhide | f43 | Input driver |
-| `xorg-x11-drv-amdgpu` | rawhide | f43 | AMD GPU |
-| `xorg-x11-drv-ati` | rawhide | f43 | ATI legacy |
-| `xorg-x11-drv-evdev` | rawhide | f43 | Event devices |
-| `xorg-x11-drv-nouveau` | rawhide | f43 | NVIDIA open |
-| `xorg-x11-drv-vmware` | rawhide | f43 | VMware guest |
-| `xorg-x11-drv-wacom` | rawhide | f43 | Wacom tablets |
-| `xorg-x11-drv-dummy` | rawhide | f43 | Headless |
-| `xorg-x11-drv-intel` | rawhide | f43 | Intel GPU |
-| `mesa-compat` | rawhide | f43 | Mesa compat libs |
+| Package | Branch | Notes |
+|---|---|---|
+| `xorg-x11-server` | f43 | Core X server — benefits from f43 security patches |
+| `xorg-x11-xauth` | f43 | |
+| `xorg-x11-xinit` | f43 | |
+| `xorg-x11-drv-libinput` | f43 | Input driver |
+| `xorg-x11-drv-amdgpu` | f43 | AMD GPU |
+| `xorg-x11-drv-ati` | f43 | ATI legacy |
+| `xorg-x11-drv-evdev` | f43 | Event devices |
+| `xorg-x11-drv-nouveau` | f43 | NVIDIA open |
+| `xorg-x11-drv-vmware` | f43 | VMware guest |
+| `xorg-x11-drv-wacom` | f43 | Wacom tablets |
+| `xorg-x11-drv-dummy` | f43 | Headless |
+| `xorg-x11-drv-intel` | f43 | Intel GPU |
+| `mesa-compat` | f43 | Mesa compat libs |
 
 #### LightDM + Greeters
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `lightdm-gtk` | rawhide | f43 | GTK greeter |
-| `slick-greeter` | rawhide | f43 | Slick greeter |
-| `lightdm-settings` | rawhide | f43 | Settings GUI |
+| Package | Branch | Notes |
+|---|---|---|
+| `lightdm-gtk` | f43 | GTK greeter |
+| `slick-greeter` | f43 | Slick greeter |
+| `lightdm-settings` | f43 | Settings GUI |
 
 #### Compiz (Desktop Effects)
 
-| Package | skip77 Branch | Our Branch |
-|---|---|---|
-| `compiz-bcop` | rawhide | f43 |
-| `libcompizconfig` | rawhide | f43 |
-| `compizconfig-python` | rawhide | f43 |
-| `compiz-plugins-main` | rawhide | f43 |
-| `compiz-plugins-extra` | rawhide | f43 |
-| `compiz-plugins-experimental` | rawhide | f43 |
-| `ccsm` | rawhide | f43 |
-| `simple-ccsm` | rawhide | f43 |
-| `fusion-icon` | rawhide | f43 |
-| `emerald` | rawhide | f43 |
-| `emerald-themes` | rawhide | f43 |
+| Package | Branch |
+|---|---|
+| `compiz-bcop` | f43 |
+| `libcompizconfig` | f43 |
+| `compizconfig-python` | f43 |
+| `compiz-plugins-main` | f43 |
+| `compiz-plugins-extra` | f43 |
+| `compiz-plugins-experimental` | f43 |
+| `ccsm` | f43 |
+| `simple-ccsm` | f43 |
+| `fusion-icon` | f43 |
+| `emerald` | f43 |
+| `emerald-themes` | f43 |
 
 #### Libraries + Dependencies
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `libXScrnSaver` | rawhide | f43 | X screensaver ext |
-| `libXvMC` | rawhide | f43 | Video MC ext |
-| `libsoup` | rawhide | f43 | HTTP library — benefits from f43 security patches |
-| `glibmm2.4` | rawhide | f43 | C++ GLib bindings |
-| `libsigc++20` | rawhide | f43 | Signal framework |
-| `pangomm` | rawhide | f43 | C++ Pango bindings |
-| `gtkmm3.0` | rawhide | f43 | C++ GTK3 bindings |
-| `atkmm` | rawhide | f43 | C++ ATK bindings |
-| `gtk-layer-shell` | rawhide | f43 | Wayland layer shell |
-| `gtk-murrine-engine` | rawhide | f43 | GTK2 theme engine |
-| `gnome-themes-extra` | rawhide | f43 | Adwaita GTK2 |
-| `libgnomekbd` | rawhide | f43 | Keyboard library |
-| `group-service` | rawhide | f43 | Group management |
-| `satyr` | rawhide | f43 | Stack traces |
-| `xfce4-dev-tools` | rawhide | f43 | Build dep for xapps |
+| Package | Branch | Notes |
+|---|---|---|
+| `libXScrnSaver` | f43 | X screensaver ext |
+| `libXvMC` | f43 | Video MC ext |
+| `libsoup` | f43 | HTTP library — benefits from f43 security patches |
+| `glibmm2.4` | f43 | C++ GLib bindings |
+| `libsigc++20` | f43 | Signal framework |
+| `pangomm` | f43 | C++ Pango bindings |
+| `gtkmm3.0` | f43 | C++ GTK3 bindings |
+| `atkmm` | f43 | C++ ATK bindings |
+| `gtk-layer-shell` | f43 | Wayland layer shell |
+| `gtk-murrine-engine` | f43 | GTK2 theme engine |
+| `gnome-themes-extra` | f43 | Adwaita GTK2 |
+| `libgnomekbd` | f43 | Keyboard library |
+| `group-service` | f43 | Group management |
+| `satyr` | f43 | Stack traces |
+| `xfce4-dev-tools` | f43 | Build dep for xapps |
 
 #### Extra Applications
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `blueman` | rawhide | f43 | Bluetooth manager |
-| `celluloid` | rawhide | f43 | Video player (mpv) |
-| `xapps` | rawhide | f43 | X-Apps library |
-| `xed` | rawhide | f43 | Text editor |
-| `xreader` | rawhide | f43 | Document viewer |
-| `gparted` | rawhide | f43 | Partition editor |
-| `dnfdragora` | rawhide | f43 | DNF GUI |
-| `gnome-abrt` | rawhide | f43 | Crash reporter |
-| `abrt` | rawhide | f43 | Bug reporting |
-| `gnome-backgrounds` | rawhide | f43 | Wallpapers |
-| `xscreensaver` | rawhide | f43 | Screensavers |
-| `system-config-language` | rawhide | f43 | Language settings |
-| `comps-extras` | rawhide | f43 | Package groups |
-| `multimedia-menus` | rawhide | f43 | Menu categories |
-| `fatsort` | rawhide | f43 | FAT filesystem sort |
+| Package | Branch | Notes |
+|---|---|---|
+| `blueman` | f43 | Bluetooth manager |
+| `celluloid` | f43 | Video player (mpv) |
+| `xapps` | f43 | X-Apps library |
+| `xed` | f43 | Text editor |
+| `xreader` | f43 | Document viewer |
+| `gparted` | f43 | Partition editor |
+| ~~`dnfdragora`~~ | ~~f43~~ | ~~DNF GUI~~ — **DEPRECATED**: useless on immutable system |
+| `gnome-abrt` | f43 | Crash reporter |
+| `abrt` | f43 | Bug reporting |
+| `gnome-backgrounds` | f43 | Wallpapers |
+| `xscreensaver` | f43 | Screensavers |
+| `system-config-language` | f43 | Language settings |
+| `comps-extras` | f43 | Package groups |
+| `multimedia-menus` | f43 | Menu categories |
+| `fatsort` | f43 | FAT filesystem sort |
 
 #### Python Libraries
 
-| Package | skip77 Branch | Our Branch |
+| Package | Branch | Notes |
 |---|---|---|
-| `python-xlib` | rawhide | f43 |
-| `python-pystray` | rawhide | f43 |
-| `python-manatools` | rawhide | f43 |
-| `python-gettext` | rawhide | f43 |
-| `python-xapp` | rawhide | f43 |
-| `python-cairosvg` | rawhide | f43 |
-| `python-cssselect2` | rawhide | f43 |
-| `python-tinycss2` | rawhide | f43 |
+| `python-xlib` | f43 | |
+| `python-pystray` | f43 | |
+| ~~`python-manatools`~~ | ~~f43~~ | **DEPRECATED**: dnfdragora dep |
+| `python-gettext` | f43 | |
+| `python-xapp` | f43 | |
+| `python-cairosvg` | f43 | |
+| `python-cssselect2` | f43 | |
+| `python-tinycss2` | f43 | |
 
-#### libyui (DNFDragora dependency)
+#### ~~libyui (DNFDragora dependency)~~ — DEPRECATED
 
-| Package | skip77 Branch | Our Branch |
-|---|---|---|
-| `libyui-mga` | rawhide | f43 |
-| `libyui-gtk` | rawhide | f43 |
-| `libyui-mga-gtk` | rawhide | f43 |
-| `libyui-mga-ncurses` | rawhide | f43 |
+| Package | Branch |
+|---|---|
+| ~~`libyui-mga`~~ | ~~f43~~ |
+| ~~`libyui-gtk`~~ | ~~f43~~ |
+| ~~`libyui-mga-gtk`~~ | ~~f43~~ |
+| ~~`libyui-mga-ncurses`~~ | ~~f43~~ |
+
+> **Deprecated:** dnfdragora and its entire dependency chain (libyui, python-manatools) are excluded from the Querencia Linux image. DNF GUI is useless on an immutable/atomic system. Packages remain in COPR but auto-rebuild is disabled.
 
 #### Misc Tools
 
-| Package | skip77 Branch | Our Branch |
-|---|---|---|
-| `appres` | rawhide | f43 |
-| `xvinfo` | rawhide | f43 |
-| `xinput` | rawhide | f43 |
-| `mathjax` | rawhide | f43 |
+| Package | Branch |
+|---|---|
+| `appres` | f43 |
+| `xvinfo` | f43 |
+| `xinput` | f43 |
+| `mathjax` | f43 |
 
 #### Special Branch
 
-| Package | skip77 Branch | Our Branch | Notes |
-|---|---|---|---|
-| `dnf5` | epel10 | **epel10** | Already EL10-native — keep as-is! |
+| Package | Branch | Notes |
+|---|---|---|
+| `dnf5` | **epel10** | Already EL10-native — keep as-is! |
 
 ### SCM Packages from skip77 GitLab (4 packages)
 
@@ -305,7 +305,7 @@ we must download the built SRPMs from the COPR build results.
 | `compiz-manager` | 0.7.0-24.el10 | 🟢 Stable | Compiz launcher |
 | `usermode` | 1.114-13.el10 | 🟢 Stable | User privilege helper |
 | `libreport` | 2.17.15-8.el10 | 🟡 Bugfix updates | Crash reporting lib |
-| `libyui` | 4.2.16-25.el10 | 🟡 Occasional updates | UI abstraction lib |
+| ~~`libyui`~~ | ~~4.2.16-25.el10~~ | ~~🟡 Occasional updates~~ | ~~UI abstraction lib~~ — **DEPRECATED**: dnfdragora dep |
 | `t1lib` | 5.1.2-42.el10 | 🟢 Stable (dead upstream) | Type 1 font lib |
 | `libglade2` | 2.6.4-36.el10 | 🟢 Stable (dead upstream) | GTK2 UI builder |
 | `p7zip` | 16.02-33.el10 | 🟢 Stable (dead upstream) | 7-Zip implementation |

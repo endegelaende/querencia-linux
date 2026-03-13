@@ -11,6 +11,7 @@ dnf install -y \
     xdg-user-dirs-gtk \
     bash-completion \
     vim-enhanced \
+    nano \
     htop \
     wget \
     curl \
@@ -41,3 +42,12 @@ dnf install -y gdk-pixbuf2 || true
 # MATE PolicyKit agent (graphical password prompts for admin actions)
 # May already be pulled in by MATE-Desktop group, install explicitly to be sure
 dnf install -y mate-polkit || true
+
+# SELinux troubleshooter (graphical notifications for SELinux denials)
+# Essential on atomic systems where users can't easily debug AVC denials
+dnf install -y setroubleshoot-server || true
+dnf install -y setroubleshoot-plugins || true
+
+# Night mode / blue light filter (needs direct X11 gamma access, can't run in Flatpak sandbox)
+dnf install -y redshift || true
+dnf install -y redshift-gtk || true

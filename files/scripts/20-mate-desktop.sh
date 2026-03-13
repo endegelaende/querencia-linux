@@ -6,6 +6,14 @@ set -xeuo pipefail
 # Install the full MATE desktop group (includes Xorg, LightDM, Compiz)
 dnf groupinstall -y "MATE-Desktop"
 
+# ---- Remove dnfdragora + libyui chain (useless on immutable/atomic system) ----
+# dnfdragora is a graphical DNF frontend — on a bootc image the rootfs is read-only,
+# so dnf install does nothing. It also pulls in libyui, python-manatools, etc.
+# Remove it and its entire dependency chain if they got pulled in by the group.
+dnf remove -y dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools \
+    libyui libyui-mga libyui-gtk libyui-mga-gtk libyui-mga-ncurses \
+    2>/dev/null || true
+
 # Additional MATE packages (may not all be in the group)
 dnf install -y mate-applets || true
 dnf install -y mate-media || true
@@ -33,9 +41,20 @@ dnf install -y \
     dejavu-sans-fonts
 
 # Locale support (UTF-8 -- required for ostree/bootc)
+# Include common languages so the Anaconda installer language choice works
 dnf install -y \
     glibc-langpack-en \
-    glibc-langpack-de
+    glibc-langpack-de \
+    glibc-langpack-fr \
+    glibc-langpack-es \
+    glibc-langpack-it \
+    glibc-langpack-pt \
+    glibc-langpack-nl \
+    glibc-langpack-pl \
+    glibc-langpack-ru \
+    glibc-langpack-ja \
+    glibc-langpack-zh \
+    glibc-langpack-ko
 
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 

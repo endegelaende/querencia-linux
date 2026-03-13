@@ -70,6 +70,7 @@ install-essentials:
     flatpak install -y flathub org.gnome.Evince
     flatpak install -y flathub com.github.tchx84.Flatseal
     flatpak install -y flathub io.github.celluloid_player.Celluloid
+    flatpak install -y flathub org.gnome.SimpleScan
     @echo "Essential apps installed."
     @echo ""
     @echo "Warehouse (Flatpak Store) is pre-installed — find it in your application menu."
