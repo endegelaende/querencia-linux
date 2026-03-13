@@ -1,65 +1,120 @@
 #!/usr/bin/env bash
 # Querencia Linux -- MATE Desktop Environment
 # From winonaoctober/MateDesktop-EL10 COPR (provides MATE + Xorg + LightDM for EL10)
+#
+# NOTE: We install packages explicitly instead of using dnf groupinstall because
+# our winonaoctober COPR fork does not ship a comps.xml group definition.
+# The package list below is derived from skip77's MATE-Desktop group, filtered
+# to exclude bloat apps (they belong in Flatpak on an immutable system).
 set -xeuo pipefail
 
-# Install the full MATE desktop group (includes Xorg, LightDM, Compiz)
-dnf groupinstall -y "MATE-Desktop"
+# ---- Xorg / Display Server ---------------------------------------------------
+dnf install -y \
+    xorg-x11-server-Xorg \
+    xorg-x11-xauth \
+    xorg-x11-xinit \
+    xorg-x11-drv-libinput \
+    xorg-x11-drv-evdev \
+    xorg-x11-drv-amdgpu \
+    xorg-x11-drv-ati \
+    xorg-x11-drv-wacom \
+    xmodmap \
+    xrdb \
+    glx-utils \
+    mesa-dri-drivers \
+    mesa-vulkan-drivers \
+    plymouth-system-theme
 
-# ---- Remove dnfdragora + libyui chain (useless on immutable/atomic system) ----
-# dnfdragora is a graphical DNF frontend — on a bootc image the rootfs is read-only,
-# so dnf install does nothing. It also pulls in libyui, python-manatools, etc.
-# Remove it and its entire dependency chain if they got pulled in by the group.
-dnf remove -y --noautoremove dnfdragora dnfdragora-updater python3-dnfdragora python3-manatools \
-    libyui libyui-mga libyui-gtk libyui-mga-gtk libyui-mga-ncurses \
-    2>/dev/null || true
+# ---- MATE Desktop Core -------------------------------------------------------
+dnf install -y \
+    mate-desktop \
+    mate-desktop-libs \
+    mate-desktop-configs \
+    mate-session-manager \
+    mate-settings-daemon \
+    mate-panel \
+    mate-panel-libs \
+    marco \
+    caja \
+    mate-menus \
+    mate-menus-libs \
+    mate-menus-preferences-category-menu \
+    mate-control-center \
+    mate-control-center-filesystem \
+    mate-notification-daemon \
+    mate-polkit \
+    mate-icon-theme \
+    mate-themes \
+    mate-backgrounds \
+    mate-common \
+    libmatekbd \
+    libmatemixer \
+    libmateweather \
+    libmateweather-data
 
-# ---- Remove bloat apps pulled in by the MATE-Desktop group -------------------
-# On an atomic/immutable system, GUI apps belong in Flatpak, not the base image.
-# Only Firefox stays (needs system integration). MATE core tools (atril, pluma,
-# engrampa, eom, mate-calc, mate-terminal, mate-screenshot, mozo) are kept.
-dnf remove -y --noautoremove \
-    thunderbird \
-    filezilla libfilezilla \
-    brasero brasero-libs \
-    celluloid \
-    simple-scan \
-    xreader xreader-libs xreader-data \
-    gnome-software gnome-software-fedora-langpacks \
-    gnome-abrt abrt abrt-addon-ccpp abrt-addon-kerneloops abrt-addon-pstoreoops \
-        abrt-addon-vmcore abrt-addon-xorg abrt-dbus abrt-desktop abrt-gui \
-        abrt-gui-libs abrt-libs python3-abrt python3-abrt-addon \
-    blivet-gui blivet-gui-runtime \
-    gparted \
-    dconf-editor \
-    gucharmap gucharmap-libs \
-    seahorse \
-    xscreensaver-base xscreensaver-extras xscreensaver-extras-gss \
-        xscreensaver-gl-base xscreensaver-gl-extras xscreensaver-gl-extras-gss \
-    yelp yelp-libs yelp-tools yelp-xsl \
-    xed \
-    system-config-language \
-    lightdm-settings \
-    mate-user-guide \
-    mate-menu \
-    2>/dev/null || true
+# ---- MATE Applications (core tools we keep) ----------------------------------
+dnf install -y \
+    mate-terminal \
+    mate-calc \
+    mate-screenshot \
+    mate-utils \
+    mate-utils-common \
+    mate-dictionary \
+    mate-disk-image-mounter \
+    mate-disk-usage-analyzer \
+    mate-search-tool \
+    mate-system-log \
+    mate-system-monitor \
+    mate-applets \
+    mate-sensors-applet \
+    mate-media \
+    mate-power-manager \
+    mate-screensaver \
+    mate-user-admin \
+    mozo \
+    pluma \
+    engrampa \
+    eom \
+    atril \
+    atril-caja \
+    atril-thumbnailer
 
-# Additional MATE packages (may not all be in the group)
-dnf install -y mate-applets || true
-dnf install -y mate-media || true
-dnf install -y mate-power-manager || true
-dnf install -y mate-screensaver || true
-dnf install -y mate-system-monitor || true
-dnf install -y mate-terminal || true
-dnf install -y mate-utils || true
-dnf install -y pluma || true
-dnf install -y caja-extensions || true
-dnf install -y engrampa || true
-dnf install -y eom || true
-dnf install -y atril || true
+# ---- Caja Extensions ---------------------------------------------------------
+dnf install -y \
+    caja-actions \
+    caja-image-converter \
+    caja-open-terminal \
+    caja-sendto \
+    caja-wallpaper \
+    caja-xattr-tags \
+    || true
 
-# LightDM greeter: slick-greeter is primary, gtk-greeter as fallback
-dnf install -y lightdm-gtk-greeter || true
+# ---- LightDM + Greeters ------------------------------------------------------
+dnf install -y \
+    lightdm \
+    lightdm-gtk \
+    slick-greeter-mate \
+    lightdm-gtk-greeter
+
+# ---- Desktop Integration -----------------------------------------------------
+dnf install -y \
+    gnome-themes-extra \
+    gtk2-engines \
+    gvfs-fuse \
+    gvfs-gphoto2 \
+    gvfs-mtp \
+    gvfs-smb \
+    libsecret \
+    usermode-gtk \
+    xdg-user-dirs-gtk \
+    lm_sensors
+
+# ---- Packages we explicitly do NOT install (Flatpak / not needed) -------------
+# thunderbird, filezilla, brasero, celluloid, simple-scan, xreader, xed
+# gnome-software, gparted, dconf-editor, gucharmap, seahorse, yelp
+# xscreensaver-*, blivet-gui, system-config-language, lightdm-settings
+# dnfdragora, libyui-*, mate-user-guide, mate-menu, mintmenu
+# abrt-desktop, initial-setup-gui
 
 # Fonts
 dnf install -y \
