@@ -8,7 +8,9 @@ dnf install -y \
     NetworkManager-openvpn \
     network-manager-applet \
     bluez \
-    blueman
+    blueman \
+    firewalld
 
 systemctl enable NetworkManager
 systemctl enable bluetooth
+systemctl enable firewalld

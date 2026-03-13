@@ -26,3 +26,18 @@ dnf install -y spice-vdagent || true
 # Optional tools (may not be in all repos)
 dnf install -y fastfetch || true
 dnf install -y just || true
+
+# Archive format backends (needed by engrampa for full format support)
+dnf install -y p7zip p7zip-plugins || true
+dnf install -y unrar || true
+dnf install -y bzip2 || true
+dnf install -y xz || true
+
+# Thumbnail support (Caja file manager previews)
+dnf install -y ffmpegthumbnailer || true
+dnf install -y evince-thumbnailer || true
+dnf install -y gdk-pixbuf2 || true
+
+# MATE PolicyKit agent (graphical password prompts for admin actions)
+# May already be pulled in by MATE-Desktop group, install explicitly to be sure
+dnf install -y mate-polkit || true

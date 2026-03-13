@@ -63,7 +63,6 @@ setup-flatpak:
 # Install recommended Flatpak apps
 install-essentials:
     @echo "Installing recommended Flatpak apps..."
-    flatpak install -y flathub app.drey.Bazaar
     flatpak install -y flathub org.mozilla.firefox
     flatpak install -y flathub org.mozilla.Thunderbird
     flatpak install -y flathub org.libreoffice.LibreOffice
@@ -73,7 +72,12 @@ install-essentials:
     flatpak install -y flathub io.github.celluloid_player.Celluloid
     @echo "Essential apps installed."
     @echo ""
-    @echo "Bazaar (App Store) is available in your application menu."
+    @echo "Warehouse (Flatpak Store) is pre-installed — find it in your application menu."
+
+# Open the Flatpak Store (Warehouse)
+open-store:
+    @echo "Opening Warehouse (Flatpak Store)..."
+    flatpak run io.github.flattool.Warehouse &
 
 # Remove unused Flatpak runtimes
 clean-flatpak:
@@ -255,25 +259,113 @@ maintenance: update clean
     @echo ""
     @echo "Maintenance complete."
 
+# Show auto-update status and log
+update-status:
+    @echo "Auto-update timer status:"
+    @echo ""
+    systemctl status querencia-auto-update.timer --no-pager 2>/dev/null || echo "Timer not found."
+    @echo ""
+    @echo "-- Last update log (last 20 lines) --"
+    @tail -20 /var/log/querencia-auto-update.log 2>/dev/null || echo "No log yet."
+
+# Trigger auto-update manually (stages image for next reboot)
+update-now:
+    @echo "Running auto-update now..."
+    sudo systemctl start querencia-auto-update.service
+    @echo ""
+    @echo "Check result:"
+    @tail -10 /var/log/querencia-auto-update.log 2>/dev/null || echo "No log yet."
+
+# Disable automatic updates
+update-disable:
+    @echo "Disabling automatic updates..."
+    sudo systemctl disable --now querencia-auto-update.timer
+    @echo "Auto-updates disabled. Re-enable with: ujust update-enable"
+
+# Enable automatic updates
+update-enable:
+    @echo "Enabling automatic updates..."
+    sudo systemctl enable --now querencia-auto-update.timer
+    @echo "Auto-updates enabled (every 6 hours)."
+
+# =============================================================================
+# Firewall
+# =============================================================================
+
+# Show firewall status
+firewall-status:
+    @echo "Firewall status:"
+    @echo ""
+    sudo firewall-cmd --state 2>/dev/null || echo "firewalld not running."
+    @echo ""
+    @echo "-- Active zone --"
+    sudo firewall-cmd --get-active-zones 2>/dev/null || true
+    @echo ""
+    @echo "-- Allowed services --"
+    sudo firewall-cmd --list-all 2>/dev/null || true
+
+# Allow a service through the firewall (e.g. ssh, http, https)
+firewall-allow service:
+    @echo "Allowing {{service}} through firewall..."
+    sudo firewall-cmd --permanent --add-service={{service}}
+    sudo firewall-cmd --reload
+    @echo "{{service}} is now allowed."
+
+# Block a service in the firewall
+firewall-block service:
+    @echo "Blocking {{service}} in firewall..."
+    sudo firewall-cmd --permanent --remove-service={{service}}
+    sudo firewall-cmd --reload
+    @echo "{{service}} is now blocked."
+
+# =============================================================================
+# Printing
+# =============================================================================
+
+# Open printer settings
+printer-setup:
+    @echo "Opening printer settings..."
+    system-config-printer &
+
+# Show CUPS status
+printer-status:
+    @echo "CUPS printing status:"
+    @echo ""
+    systemctl status cups.socket --no-pager 2>/dev/null || echo "CUPS not available."
+    @echo ""
+    @echo "-- Configured printers --"
+    lpstat -p 2>/dev/null || echo "No printers configured."
+
 # =============================================================================
 # Micromamba (user-space package manager)
 # =============================================================================
+# The 'base' environment is auto-created on first login and always active.
+# Install packages directly:  micromamba install ripgrep bat fd-find
+# Or use ujust:               ujust mamba-install ripgrep bat fd-find
 
-# Initialize micromamba (first time setup)
+# Show micromamba status and base environment info
 mamba-setup:
-    @echo "Setting up micromamba..."
-    @if [ ! -d "${HOME}/micromamba" ]; then \
-        micromamba shell init --shell bash --root-prefix "${HOME}/micromamba"; \
-        echo "Micromamba initialized."; \
-        echo "  Restart your terminal or run: source ~/.bashrc"; \
+    @echo "Micromamba status:"
+    @echo ""
+    @if [ -d "${HOME}/micromamba/envs/base" ]; then \
+        echo "  ✅ base environment is ready (auto-created on first login)"; \
+        echo "  📦 Installed packages:"; \
+        micromamba list -n base --no-banner 2>/dev/null | tail -n +4 || true; \
     else \
-        echo "Micromamba is already set up (${HOME}/micromamba)"; \
+        echo "  ⚠️  base environment not found — creating it now..."; \
+        micromamba create -n base -c conda-forge -y; \
+        echo "  ✅ base environment created."; \
+        echo "  Restart your terminal or run: source ~/.bashrc"; \
     fi
+    @echo ""
+    @echo "Install packages:  micromamba install <package>"
+    @echo "Search packages:   micromamba search <package>"
+    @echo "Create new env:    ujust mamba-create myenv"
 
-# Create a 'tools' environment with useful CLI tools
+# Install recommended CLI tools into base environment
 mamba-install-tools:
-    @echo "Creating 'tools' environment with CLI tools..."
-    micromamba create -n tools -c conda-forge -y \
+    @echo "Installing CLI tools into base environment..."
+    micromamba install -n base -c conda-forge -y \
         ripgrep \
         fd-find \
         bat \
@@ -287,9 +379,8 @@ mamba-install-tools:
         tldr \
         bottom
     @echo ""
-    @echo "'tools' environment created."
-    @echo "  Activate with: micromamba activate tools"
-    @echo "  Make permanent: echo 'micromamba activate tools' >> ~/.bashrc"
+    @echo "CLI tools installed into base (already active)."
+    @echo "Try: rg, fd, bat, eza, fzf, jq, tldr"
 
 # Create a new empty environment
 mamba-create name:
@@ -297,10 +388,10 @@ mamba-create name:
     micromamba create -n {{name}} -c conda-forge -y
     @echo "Environment '{{name}}' created. Activate: micromamba activate {{name}}"
 
-# Install package(s) in the active environment
+# Install package(s) into base environment
 mamba-install +packages:
-    @echo "Installing: {{packages}}"
-    micromamba install -c conda-forge -y {{packages}}
+    @echo "Installing into base: {{packages}}"
+    micromamba install -n base -c conda-forge -y {{packages}}
 
 # List all environments
 mamba-list:
@@ -308,16 +399,16 @@ mamba-list:
     @echo ""
     micromamba env list
 
-# List packages in the active environment
+# List packages in base environment
 mamba-packages:
-    @echo "Installed packages:"
-    micromamba list
+    @echo "Packages in base:"
+    micromamba list -n base
 
-# Update all packages in the active environment
+# Update all packages in base environment
 mamba-update:
-    @echo "Updating active environment..."
-    micromamba update --all -y
-    @echo "Environment updated."
+    @echo "Updating base environment..."
+    micromamba update -n base --all -y
+    @echo "Base environment updated."
 
 # Export environment to YAML (backup)
 mamba-backup name="tools":

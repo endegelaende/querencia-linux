@@ -81,10 +81,21 @@ if command -v xdg-user-dirs-update &>/dev/null; then
     xdg-user-dirs-update
 fi
 
-# Add Flathub remote for user
+# Add Flathub remote for user and install Warehouse (Flatpak store)
 if command -v flatpak &>/dev/null; then
     flatpak remote-add --if-not-exists --user flathub \
         https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
+    flatpak install --user --noninteractive flathub \
+        io.github.flattool.Warehouse 2>/dev/null || true
+fi
+
+# Create micromamba 'base' environment (user-space package manager)
+if command -v micromamba &>/dev/null; then
+    export MAMBA_ROOT_PREFIX="${HOME}/micromamba"
+    eval "$(micromamba shell hook --shell bash)"
+    if [ ! -d "${MAMBA_ROOT_PREFIX}/envs/base" ]; then
+        micromamba create -n base -c conda-forge -y 2>/dev/null || true
+    fi
 fi
 
 mkdir -p "${HOME}/.config"
@@ -94,13 +105,98 @@ if command -v notify-send &>/dev/null; then
     notify-send \
         --icon=dialog-information \
         "Querencia Linux" \
-        "Welcome. Your system is ready.\nRun 'ujust --list' in a terminal for available commands." \
+        "Welcome. Your system is ready.\nBrowse apps: Warehouse (Flatpak Store) in your menu\nInstall packages: micromamba install <pkg>\nRun 'ujust --list' for more commands." \
         2>/dev/null || true
 fi
 FIRSTBOOT
 chmod +x /usr/libexec/querencia-first-boot
 
 systemctl --global enable querencia-first-boot-setup.service 2>/dev/null || true
+
+# ---- Auto-Update Timer -------------------------------------------------------
+cat > /etc/systemd/system/querencia-auto-update.timer <<'EOF'
+[Unit]
+Description=Querencia Linux -- Automatic image update check
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=6h
+Persistent=true
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target
+EOF
+
+cat > /etc/systemd/system/querencia-auto-update.service <<'EOF'
+[Unit]
+Description=Querencia Linux -- Automatic image update
+After=network-online.target
+Wants=network-online.target
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/querencia-auto-update
+Nice=19
+IOSchedulingClass=idle
+EOF
+
+cat > /usr/libexec/querencia-auto-update <<'AUTOUPDATE'
+#!/usr/bin/env bash
+# Querencia Linux -- Automatic background update
+# Checks for new bootc images and stages them for next reboot.
+# Also updates Flatpak apps system-wide.
+# Notifies logged-in desktop users when an update is staged.
+set -euo pipefail
+
+LOGFILE="/var/log/querencia-auto-update.log"
+exec >> "${LOGFILE}" 2>&1
+echo "=== $(date -Iseconds) ==="
+
+IMAGE_UPDATED=false
+
+# Stage new bootc image (applied on next reboot)
+if bootc upgrade --check 2>/dev/null | grep -q "Update available"; then
+    echo "New image available, staging update..."
+    bootc upgrade
+    echo "Image staged. Will apply on next reboot."
+    IMAGE_UPDATED=true
+else
+    echo "System image is up to date."
+fi
+
+# Update Flatpak apps
+if command -v flatpak &>/dev/null; then
+    echo "Updating Flatpak apps..."
+    flatpak update -y --noninteractive 2>/dev/null || true
+    flatpak uninstall --unused -y --noninteractive 2>/dev/null || true
+    echo "Flatpak update complete."
+fi
+
+# Notify logged-in desktop users about staged image update
+if [ "${IMAGE_UPDATED}" = true ]; then
+    echo "Notifying desktop users..."
+    for user_id in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $1}'); do
+        user_name=$(loginctl list-users --no-legend 2>/dev/null | awk -v id="$user_id" '$1==id {print $2}')
+        if [ -n "${user_name}" ]; then
+            sudo -u "${user_name}" \
+                DISPLAY=:0 \
+                DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${user_id}/bus" \
+                notify-send \
+                    --icon=software-update-available \
+                    "System Update Available" \
+                    "A new Querencia Linux image has been staged.\nReboot to apply the update.\n\nRun 'ujust rollback' after reboot to undo." \
+                    2>/dev/null || true
+        fi
+    done
+fi
+
+echo "=== Done ==="
+AUTOUPDATE
+chmod +x /usr/libexec/querencia-auto-update
+
+systemctl enable querencia-auto-update.timer
 
 # ---- MOTD --------------------------------------------------------------------
 cat > /etc/motd <<'MOTD'
@@ -115,6 +211,12 @@ cat > /etc/motd <<'MOTD'
   ujust status       Show bootc image status
   ujust rollback     Roll back to previous image
   ujust info         Show system info
+
+  Auto-updates run every 6 hours (reboot to apply)
+
+  Browse & install apps:
+    Warehouse (Flatpak Store) — in your application menu
+    micromamba install ripgrep bat fd-find
 
 MOTD
 cp /etc/motd /etc/issue.net
