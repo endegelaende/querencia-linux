@@ -65,29 +65,29 @@ dnf install -y \
     mate-search-tool \
     mate-system-log \
     mate-system-monitor \
-    mate-applets \
-    mate-sensors-applet \
     mate-media \
     mate-power-manager \
     mate-screensaver \
-    mate-user-admin \
-    mozo \
-    pluma \
     engrampa \
     eom \
     atril \
     atril-caja \
     atril-thumbnailer
 
-# ---- Caja Extensions ---------------------------------------------------------
-dnf install -y \
-    caja-actions \
-    caja-image-converter \
-    caja-open-terminal \
-    caja-sendto \
-    caja-wallpaper \
-    caja-xattr-tags \
-    || true
+# Optional MATE apps (may not be built yet in COPR — install individually)
+dnf install -y pluma || true
+dnf install -y mozo || true
+dnf install -y mate-applets || true
+dnf install -y mate-sensors-applet || true
+dnf install -y mate-user-admin || true
+
+# ---- Caja Extensions (optional — not all may be built yet) -------------------
+dnf install -y caja-actions || true
+dnf install -y caja-image-converter || true
+dnf install -y caja-open-terminal || true
+dnf install -y caja-sendto || true
+dnf install -y caja-wallpaper || true
+dnf install -y caja-xattr-tags || true
 
 # ---- LightDM + Greeters ------------------------------------------------------
 dnf install -y \
