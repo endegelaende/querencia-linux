@@ -70,6 +70,17 @@ You have **4 virtual workspaces** out of the box:
 - `Ctrl+Alt+←` / `Ctrl+Alt+→` — switch between workspaces
 - `Ctrl+Alt+Shift+←` / `Ctrl+Alt+Shift+→` — move the current window to another workspace
 
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Super+L` | Lock screen |
+| `Super+D` | Show desktop (minimize all windows) |
+| `Super+E` | Open file manager (Caja) |
+| `Ctrl+Alt+T` | Open terminal |
+| `Alt+F1` | Open application menu |
+| `Alt+Tab` | Switch windows |
+
 ### Screenshots
 
 | Shortcut | Action |

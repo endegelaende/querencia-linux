@@ -63,13 +63,14 @@ setup-flatpak:
 # Install recommended Flatpak apps
 install-essentials:
     @echo "Installing recommended Flatpak apps..."
-    flatpak install -y flathub org.mozilla.Thunderbird
-    flatpak install -y flathub org.libreoffice.LibreOffice
-    flatpak install -y flathub org.gnome.Calculator
-    flatpak install -y flathub org.gnome.Evince
-    flatpak install -y flathub com.github.tchx84.Flatseal
-    flatpak install -y flathub io.github.celluloid_player.Celluloid
-    flatpak install -y flathub org.gnome.SimpleScan
+    flatpak install -y flathub \
+        org.mozilla.Thunderbird \
+        org.libreoffice.LibreOffice \
+        org.gnome.Calculator \
+        org.gnome.Evince \
+        com.github.tchx84.Flatseal \
+        io.github.celluloid_player.Celluloid \
+        org.gnome.SimpleScan
     @echo "Essential apps installed."
     @echo ""
     @echo "Warehouse (Flatpak Store) is pre-installed — find it in your application menu."
@@ -657,6 +658,19 @@ device-info:
         journalctl -b 0 -p err --no-pager -n 25 2>/dev/null || echo "no errors"
     } > "${TMPFILE}" 2>&1
     echo "Diagnostics collected ($(wc -l < "${TMPFILE}") lines)."
+    echo ""
+    echo "This will upload your system diagnostics to ix.io (a public pastebin)."
+    echo "The data includes: OS version, hardware info, RPM list, network, logs."
+    echo ""
+    read -p "Upload to ix.io? [y/N] " _upload
+    if [[ "${_upload}" != [yY] ]]; then
+        echo ""
+        echo "Upload skipped. Diagnostics saved locally:"
+        echo "  ${TMPFILE}"
+        echo ""
+        echo "You can share it manually:  curl -F 'f:1=<${TMPFILE}' ix.io"
+        exit 0
+    fi
     echo ""
     echo "Uploading to ix.io..."
     URL=$(curl -sF 'f:1=<'"${TMPFILE}" ix.io 2>/dev/null) || true

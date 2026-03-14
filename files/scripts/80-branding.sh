@@ -4,11 +4,18 @@
 set -xeuo pipefail
 
 # Determine GPU label from VARIANT env var (set by Containerfile ARG)
-if [[ "${VARIANT:-}" == "nvidia" ]]; then
-    GPU_LABEL="NVIDIA"
-else
-    GPU_LABEL="AMD"
-fi
+case "${VARIANT:-}" in
+    ""|amd)
+        GPU_LABEL="AMD"
+        ;;
+    nvidia)
+        GPU_LABEL="NVIDIA"
+        ;;
+    *)
+        echo "ERROR: Unknown VARIANT '${VARIANT}' — expected '', 'amd', or 'nvidia'"
+        exit 1
+        ;;
+esac
 
 rm -f /etc/os-release /usr/lib/os-release
 printf '%s\n' \

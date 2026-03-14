@@ -176,7 +176,9 @@ On your first login, Querencia automatically:
 3. Adds Flathub remote for your user
 4. Installs **Warehouse** (Flatpak app store) — find it in your application menu
 5. Creates a Micromamba `base` environment (ready to use immediately)
-6. Shows a welcome notification
+6. Opens the **Welcome Center** — a guided introduction to your system (12 languages)
+
+The Welcome Center shows first steps, app installation guides, system info, and helpful links. To stop it appearing at login, uncheck "Show at startup". You can always reopen it from the menu: **System → Welcome to Querencia Linux**.
 
 ---
 
@@ -381,6 +383,20 @@ CI runs automatically via GitHub Actions (push to `main`, weekly schedule, or ma
 
 ---
 
+## Documentation
+
+Full user documentation is available at **[querencialinux.org/docs/](https://querencialinux.org/docs/)** and as Markdown source in [`Documentation/`](Documentation/):
+
+| Guide | Description |
+|---|---|
+| [Getting Started](Documentation/01-getting-started.md) | First login, Welcome Center, desktop, keyboard, shortcuts |
+| [Installing Software](Documentation/02-installing-software.md) | Flatpak, Micromamba, Distrobox |
+| [Updates & Maintenance](Documentation/03-updates-and-maintenance.md) | Auto-updates, rollback, ZRAM, system info |
+| [Hardware Support](Documentation/04-hardware.md) | GPU (AMD/NVIDIA), printing, scanning, audio, WiFi |
+| [FAQ](Documentation/05-faq.md) | 23 frequently asked questions |
+
+---
+
 ## Customization
 
 **Add packages** — create a numbered script in `files/scripts/`:
@@ -419,7 +435,11 @@ System-wide defaults that users can override individually:
 | File Manager (Caja) | List view, bookmarks for Documents/Downloads/Pictures/Music/Videos |
 | Screensaver | Blank mode, lock after 10 min idle |
 | Power (AC) | No sleep, display off after 15 min |
+| Power (Battery) | Sleep after 30 min, display off after 5 min, lid = suspend |
 | Screenshot | Print = full screen, Alt+Print = window, Shift+Print = area |
+| Lock Screen | Super+L |
+| Show Desktop | Super+D |
+| File Manager | Super+E |
 | Night Mode | Redshift available in system tray |
 
 ### Audio
@@ -437,11 +457,18 @@ System-wide defaults that users can override individually:
 ```
 querencia-linux/
 ├── .github/
-│   ├── actions/              ← Reusable action configs
+│   ├── actions/config/       ← Shared CI config (registry, platforms, signing)
 │   └── workflows/            ← CI: build.yml (images) + build-iso.yml (ISOs)
+├── Documentation/            ← User documentation (Markdown source for website docs)
+│   ├── 00-index.md           ← Documentation overview
+│   ├── 01-getting-started.md ← First login, Welcome Center, desktop, shortcuts
+│   ├── 02-installing-software.md ← Flatpak, Micromamba, Distrobox
+│   ├── 03-updates-and-maintenance.md ← Auto-updates, rollback, ZRAM, system info
+│   ├── 04-hardware.md        ← GPU (AMD/NVIDIA), printing, scanning, audio, WiFi
+│   └── 05-faq.md             ← 23 FAQ entries
 ├── assets/
 │   ├── querencia-logo.svg    ← Project logo (used in Plymouth + README)
-│   └── querencia{1,2,3}.png  ← Pre-rendered Plymouth boot splash (3 sizes)
+│   └── querencia{1,2,3}.png  ← Plymouth splash + desktop/login wallpapers
 ├── copr-fork/                ← COPR fork docs, package inventory, scripts
 │   ├── README.md             ← Strategy, package tables, setup instructions
 │   ├── packages.json         ← All 128 COPR packages (machine-readable)
@@ -451,7 +478,7 @@ querencia-linux/
 │   ├── download-srpms.sh     ← Download SRPMs from COPR build results
 │   ├── migrate-to-forks.sh   ← Upload→SCM migration (completed)
 │   ├── migrate-to-forks-curl.sh ← curl-based migration (Windows)
-│   └── forks/                ← Patch docs + specs for 5 GitHub fork repos
+│   └── forks/                ← Patch docs + specs for GitHub fork repos
 ├── files/
 │   ├── scripts/
 │   │   ├── 10-repos.sh       ← EPEL, CRB, Rocky Devel, winonaoctober COPR, RPM Fusion
@@ -462,32 +489,36 @@ querencia-linux/
 │   │   ├── 40-network.sh     ← NetworkManager, WiFi, OpenVPN, WireGuard, Bluetooth, Firewall
 │   │   ├── 45-system-tools.sh ← Firefox, fastfetch, iOS, ddcutil, powertop, Redshift
 │   │   ├── 46-printing.sh    ← CUPS + SANE scanner backends
-│   │   ├── 50-micromamba.sh   ← Micromamba binary to /usr/bin
+│   │   ├── 50-micromamba.sh   ← Micromamba binary to /usr/bin (pinned + SHA256)
 │   │   ├── 55-flatpak.sh     ← Flatpak + Flathub remote + repo init service
 │   │   ├── 60-distrobox.sh   ← Distrobox + Podman
 │   │   ├── 71-zram.sh        ← ZRAM compressed swap (50% RAM, zstd)
-│   │   ├── 72-plymouth.sh    ← Plymouth boot splash with Querencia logo
-│   │   ├── 75-post-install.sh ← First-boot service, auto-update, ujust, sysctl, polkit
+│   │   ├── 72-plymouth.sh    ← Plymouth boot splash + wallpaper install
+│   │   ├── 75-post-install.sh ← First-boot service, auto-update, Welcome Center, ujust
 │   │   ├── 80-branding.sh    ← os-release, /etc/issue, image-info.json
 │   │   ├── 85-gpu-tuning.sh  ← GPU kernel config (AMD: ppfeaturemask | NVIDIA: kargs)
 │   │   ├── 87-disable-repos.sh ← Disable third-party repos after install (security)
 │   │   ├── 88-validate-repos.sh ← Security gate: fail build if repos still enabled
-│   │   ├── 89-tests.sh       ← Build-time tests (packages, services, files, GPU)
+│   │   ├── 89-tests.sh       ← Build-time tests (packages, services, files, ZRAM, GPU)
 │   │   ├── 90-signing.sh     ← Cosign key setup (template — do not modify)
 │   │   ├── 91-image-info.sh  ← VARIANT_ID in os-release (template — do not modify)
 │   │   ├── build.sh          ← Build orchestrator (template — do not modify)
 │   │   └── cleanup.sh        ← Image cleanup (template — do not modify)
 │   └── system/               ← Files overlaid onto / during build
-│       ├── etc/dconf/        ← MATE defaults (BlueMenta, Noto, screenshot keys)
+│       ├── etc/dconf/        ← MATE defaults (BlueMenta, Noto, Dracula terminal)
 │       ├── etc/fonts/        ← Fontconfig (subpixel rendering, Noto fallback)
 │       ├── etc/geoclue/      ← BeaconDB WiFi geolocation (privacy-friendly)
 │       ├── etc/lightdm/      ← LightDM + GTK greeter config
 │       ├── etc/profile.d/    ← Micromamba shell integration + open alias
+│       ├── etc/xdg/autostart/ ← Welcome Center autostart (12 languages)
 │       ├── etc/yum.repos.d/  ← winonaoctober MATE COPR + Rocky Devel repos
+│       ├── usr/bin/           ← querencia-welcome + launcher scripts
 │       ├── usr/lib/modprobe.d/ ← AMD legacy GPU support (amd-legacy.conf)
+│       ├── usr/lib/querencia/ ← Welcome Center app (Python 3 + GTK 3, 12 languages)
 │       ├── usr/lib/systemd/  ← dconf-update.service (regenerate on boot)
 │       ├── usr/lib/udev/     ← Realtek USB Ethernet + Apple SuperDrive rules
-│       └── usr/share/justfiles/ ← ujust recipes
+│       ├── usr/share/applications/ ← Welcome Center menu entry (12 languages)
+│       └── usr/share/justfiles/ ← ujust recipes (~50 commands)
 ├── .gitattributes            ← Enforce LF line endings
 ├── Dockerfile                ← Multi-stage build (bootc:10, VARIANT arg, DNF cache mount)
 ├── LICENSE                   ← MIT license
@@ -505,9 +536,9 @@ All MATE Desktop packages come from our own COPR: **[winonaoctober/MateDesktop-E
 
 | Detail | Value |
 |---|---|
-| **Total packages** | 128 (111 SCM from Fedora distgit, 5 GitHub forks, 11 upload SRPMs, 1 deprecated fork) |
+| **Total packages** | 128 (111 SCM from Fedora distgit, 6 GitHub forks, 11 upload SRPMs) |
 | **Auto-rebuild** | 107 packages (pinned to Fedora `f43` branch) |
-| **GitHub forks** | 5 packages under [`endegelaende/`](https://github.com/endegelaende) with minimal EL10 patches |
+| **GitHub forks** | 6 packages under [`endegelaende/`](https://github.com/endegelaende) (5 active + 1 deprecated mintmenu) |
 | **Deprecated** | 8 packages (dnfdragora + libyui chain + mintmenu — not used in image) |
 | **Architectures** | x86_64 + aarch64 |
 
@@ -538,7 +569,7 @@ Any GPU supported by the open-source `amdgpu` driver works out of the box — Me
 <details>
 <summary><b>Where do the MATE packages come from?</b></summary>
 
-From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — 128 packages, all under our control. 111 are built directly from Fedora distgit, 5 from our own GitHub forks with minimal EL10 patches, and 11 are stable/frozen upload SRPMs. See [`copr-fork/`](copr-fork/) for details.
+From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — 128 packages, all under our control. 111 are built directly from Fedora distgit, 6 from our own GitHub forks with minimal EL10 patches (5 active + 1 deprecated), and 11 are stable/frozen upload SRPMs. See [`copr-fork/`](copr-fork/) for details.
 </details>
 
 <details>
@@ -576,8 +607,16 @@ MATE is lightweight, classic, and fast. AlmaLinux already provides official GNOM
 ## Acknowledgments
 
 - **[Skip Grube (skip77)](https://copr.fedorainfracloud.org/coprs/skip77/MateDesktop-EL10/)** — Pioneered MATE Desktop packaging for EL10. His COPR was the original (and only) source of MATE packages for AlmaLinux/Rocky 10 and provided the foundation that made this project possible. We built our independent fork on the groundwork he laid.
-- **[AlmaLinux](https://almalinux.org/)** — Base image and the [Atomic Respin Template](https://github.com/AlmaLinux/atomic-respin-template) that this project is built on.
+- **[AlmaLinux](https://almalinux.org/)** — Base image, [Atomic Respin Template](https://github.com/AlmaLinux/atomic-respin-template), and [native NVIDIA support](https://wiki.almalinux.org/documentation/nvidia.html).
 - **[MATE Desktop](https://mate-desktop.org/)** — The desktop environment at the heart of Querencia.
+
+## Links
+
+- **Website:** [querencialinux.org](https://querencialinux.org)
+- **Documentation:** [querencialinux.org/docs/](https://querencialinux.org/docs/)
+- **AMD Image:** `ghcr.io/endegelaende/querencia-linux:latest`
+- **NVIDIA Image:** `ghcr.io/endegelaende/querencia-linux-nvidia:latest`
+- **COPR:** [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/)
 
 ## License
 

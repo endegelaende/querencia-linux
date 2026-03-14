@@ -20,7 +20,7 @@ TMPDIR=$(mktemp -d)
 trap 'rm -rf "${TMPDIR}"' EXIT
 
 echo "Downloading micromamba ${RELEASE_TAG}..."
-curl -fsSL -o "${TMPDIR}/micromamba" "${URL}"
+curl -fsSL --retry 3 --retry-delay 5 -o "${TMPDIR}/micromamba" "${URL}"
 
 echo "Verifying SHA256 checksum..."
 echo "${SHA256}  ${TMPDIR}/micromamba" | sha256sum -c -
