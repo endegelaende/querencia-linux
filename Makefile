@@ -11,6 +11,9 @@ QEMU_DISK_RAW ?= ./output/disk.raw
 QEMU_DISK_QCOW2 ?= ./output/qcow2/disk.qcow2
 QEMU_ISO ?= ./output/bootiso/install.iso
 
+SHELL := /bin/bash
+.PHONY: clean image bib_image iso qcow2 run-qemu-qcow run-qemu-iso run-qemu
+
 .ONESHELL:
 
 clean:

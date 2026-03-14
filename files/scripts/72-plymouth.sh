@@ -5,7 +5,8 @@
 set -xeuo pipefail
 
 # Install Plymouth and the script plugin (allows custom splash screens)
-dnf install -y plymouth plymouth-system-theme plymouth-plugin-two-step || true
+dnf install -y plymouth plymouth-system-theme
+dnf install -y plymouth-plugin-two-step || true
 dnf install -y plymouth-plugin-script || true
 
 # ---- Create Querencia Plymouth Theme -----------------------------------------
@@ -81,7 +82,7 @@ splash_sprite.SetPosition(pos_x, pos_y, 0);
 
 # ---- Progress indicator (subtle pulsing dot) ---------------------------------
 
-progress_dot = Image("splash.png").Scale(8, 8);  # tiny dot fallback
+
 # Draw a small #C75230 dot for the activity indicator
 dot_image = Image.Text(".", 0.78, 0.32, 0.19);  # #C75230 as RGB fractions
 dot_sprite = Sprite(dot_image);

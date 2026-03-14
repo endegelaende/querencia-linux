@@ -5,7 +5,8 @@
 set -xeuo pipefail
 
 # Install zram-generator (creates /dev/zram0 swap automatically at boot)
-dnf install -y systemd-zram-generator || true
+# Hard dependency: ZRAM is essential for desktop responsiveness and is a test-checklist item.
+dnf install -y systemd-zram-generator
 
 # Configure ZRAM: 50% of RAM, zstd compression (best ratio/speed for desktop)
 mkdir -p /usr/lib/systemd/zram-generator.conf.d

@@ -4,7 +4,7 @@
 # =============================================================================
 #
 # This script reads packages.json and sets up a complete COPR fork of
-# skip77/MateDesktop-EL10 under the winonaoctober account.
+# winonaoctober/MateDesktop-EL10 COPR project for Querencia Linux.
 #
 # Prerequisites:
 #   - copr-cli installed and configured (~/.config/copr with valid API token)
@@ -37,8 +37,9 @@ set -euo pipefail
 COPR_PROJECT="winonaoctober/MateDesktop-EL10"
 COPR_OWNER="winonaoctober"
 COPR_NAME="MateDesktop-EL10"
-SKIP77_OWNER="skip77"
-SKIP77_PROJECT="MateDesktop-EL10"
+# Legacy: Upload SRPMs were originally sourced from our own COPR builds
+SRPM_SOURCE_OWNER="winonaoctober"
+SRPM_SOURCE_PROJECT="MateDesktop-EL10"
 COPR_API_BASE="https://copr.fedorainfracloud.org/api_3"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -226,7 +227,7 @@ create_copr_project() {
         run_cmd copr-cli modify \
             --chroot rhel+epel-10-x86_64 \
             --chroot rhel+epel-10-aarch64 \
-            --description "MATE Desktop for AlmaLinux/EL10 — fork of skip77/MateDesktop-EL10 for Querencia Linux" \
+            --description "MATE Desktop for AlmaLinux/EL10 — Querencia Linux" \
             --instructions "See https://github.com/endegelaende/querencia-linux for usage" \
             --repo 'https://download.rockylinux.org/pub/rocky/$releasever/devel/$basearch/os/' \
             --repo 'https://dl.fedoraproject.org/pub/epel/${releasever}z/Everything/$basearch/' \
@@ -239,7 +240,7 @@ create_copr_project() {
     if run_cmd copr-cli create \
         --chroot rhel+epel-10-x86_64 \
         --chroot rhel+epel-10-aarch64 \
-        --description "MATE Desktop for AlmaLinux/EL10 — fork of skip77/MateDesktop-EL10 for Querencia Linux" \
+        --description "MATE Desktop for AlmaLinux/EL10 — Querencia Linux" \
         --instructions "See https://github.com/endegelaende/querencia-linux for usage" \
         --repo 'https://download.rockylinux.org/pub/rocky/$releasever/devel/$basearch/os/' \
         --repo 'https://dl.fedoraproject.org/pub/epel/${releasever}z/Everything/$basearch/' \
@@ -318,11 +319,11 @@ process_scm_packages() {
 # Step 4: Handle upload (SRPM) packages
 # ---------------------------------------------------------------------------
 
-# Fetch the SRPM download URL from skip77's COPR via the API
+# Fetch the SRPM download URL from COPR via the API
 get_srpm_url() {
     local pkg_name="$1"
 
-    local api_url="${COPR_API_BASE}/package?ownername=${SKIP77_OWNER}&projectname=${SKIP77_PROJECT}&packagename=${pkg_name}&with_latest_succeeded_build=true"
+    local api_url="${COPR_API_BASE}/package?ownername=${SRPM_SOURCE_OWNER}&projectname=${SRPM_SOURCE_PROJECT}&packagename=${pkg_name}&with_latest_succeeded_build=true"
     local response
     response=$(curl -s "$api_url")
 
@@ -344,7 +345,7 @@ get_srpm_url() {
     srpm_url=$(echo "$response" | jq -r '.builds.latest_succeeded.source_package.url // empty')
 
     if [[ -z "$srpm_url" || "$srpm_url" == "null" ]]; then
-        log_error "No SRPM URL found for $pkg_name in skip77's COPR"
+        log_error "No SRPM URL found for $pkg_name in COPR"
         return 1
     fi
 
@@ -391,8 +392,8 @@ process_upload_package() {
     if [[ -f "$local_srpm" ]]; then
         log_info "SRPM already downloaded: $local_srpm"
     else
-        # Fetch the SRPM URL from skip77's COPR API
-        log_info "Fetching SRPM URL from skip77's COPR for $name..."
+        # Fetch the SRPM URL from COPR API
+        log_info "Fetching SRPM URL from COPR for $name..."
         local srpm_url
         if ! srpm_url=$(get_srpm_url "$name"); then
             log_error "Could not determine SRPM URL for $name"

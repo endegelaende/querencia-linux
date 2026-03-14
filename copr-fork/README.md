@@ -1,24 +1,23 @@
 # COPR Fork: MateDesktop-EL10
 
-> Fork of [skip77/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/skip77/MateDesktop-EL10/)
-> for long-term supply-chain independence of Querencia Linux.
+> Independent MATE Desktop package repository for Querencia Linux (AlmaLinux/EL10).
+> All 128 packages under our control — no external runtime dependencies.
 
-## Why Fork?
+## Why Our Own COPR?
 
-The skip77 COPR is the **only source** of MATE Desktop packages for EL10 (AlmaLinux, Rocky, CentOS Stream).
-It is maintained by a single person. If the repo goes offline, our image can no longer be built.
+MATE Desktop is not available in the standard EL10 repositories. We maintain our own COPR to provide all required packages.
 
-Forking gives us:
-- **Independence** — we control the build pipeline
-- **Stability** — we pin to EL10-compatible Fedora branches (not rawhide)
-- **Automation** — scheduled rebuilds catch security updates
+This gives us:
+- **Independence** — we control the entire build pipeline, no external dependencies
+- **Stability** — we pin to EL10-compatible Fedora branches (`f43`, not rawhide)
+- **Automation** — scheduled rebuilds catch security updates from Fedora
 - **Transparency** — full audit trail of what goes into our image
 
 ## EL10 Compatibility Strategy
 
 ### The Problem with `rawhide`
 
-skip77 builds ~80 packages from the Fedora `rawhide` branch. This works today but is fragile:
+Building MATE packages from Fedora's `rawhide` branch is fragile:
 
 - **rawhide** = Fedora 45+ (bleeding edge, constantly changing)
 - **EL10** is based on the Fedora 40/41 dependency stack
@@ -93,9 +92,9 @@ our branch choice.
 
 | Category | Count | Source | Auto-Update? |
 |---|---|---|---|
-| SCM (Fedora src.fedoraproject.org) | 108 (102 active, 6 deprecated) | Git branches | ✅ Yes (COPR auto-rebuild or scheduled) |
-| SCM (skip77 GitLab) | 4 | skip77's patches | ⚠️ Manual (fork the GitLab repos) |
-| Upload (SRPMs) | 16 (1 deprecated) | Manual uploads | ❌ Manual (mostly stable/legacy) |
+| SCM (Fedora src.fedoraproject.org) | 111 (105 active, 6 deprecated) | Git branches | ✅ Yes (COPR auto-rebuild or scheduled) |
+| SCM (GitHub-Forks under `endegelaende/`) | 5 (+1 deprecated) | Fedora-based + EL10 patches | ⚠️ Manual (stable packages) |
+| Upload (SRPMs) | 11 (10 dead/stable, 1 deprecated) | Manual uploads | ❌ Never needed (dead upstream) |
 | **Total** | **128** | | |
 
 ### SCM Packages from Fedora (auto-updatable)
@@ -112,7 +111,6 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 | `mate-menu` | f43 | Advanced menu |
 | `mate-panel` | f43 | Panel |
 | `mate-session-manager` | f43 | Session manager |
-| `mate-settings-daemon` | f43 | Settings daemon |
 | `mate-control-center` | f43 | Control center |
 | `mate-polkit` | f43 | PolicyKit agent |
 | `mate-backgrounds` | f43 | Wallpapers |
@@ -151,6 +149,7 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 | `atril` | f43 |
 | `engrampa` | f43 |
 | `eom` | f43 |
+| `mozo` | f43 |
 
 #### Xorg Server + Drivers
 
@@ -213,6 +212,7 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 | `group-service` | f43 | Group management |
 | `satyr` | f43 | Stack traces |
 | `xfce4-dev-tools` | f43 | Build dep for xapps |
+| `libreport` | f43 | Crash reporting library (ABRT dep) |
 
 #### Extra Applications
 
@@ -233,6 +233,7 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 | `comps-extras` | f43 | Package groups |
 | `multimedia-menus` | f43 | Menu categories |
 | `fatsort` | f43 | FAT filesystem sort |
+| `network-manager-applet` | f43 | NetworkManager tray applet |
 
 #### Python Libraries
 
@@ -256,7 +257,7 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 | ~~`libyui-mga-gtk`~~ | ~~f43~~ |
 | ~~`libyui-mga-ncurses`~~ | ~~f43~~ |
 
-> **Deprecated:** dnfdragora and its entire dependency chain (libyui, python-manatools) are excluded from the Querencia Linux image. DNF GUI is useless on an immutable/atomic system. Packages remain in COPR but auto-rebuild is disabled.
+> **Deprecated:** dnfdragora and its entire dependency chain (libyui, python-manatools) are excluded from the Querencia Linux image. DNF GUI is useless on an immutable/atomic system. mintmenu is also deprecated (not installed in image). Packages remain in COPR but auto-rebuild is disabled.
 
 #### Misc Tools
 
@@ -273,49 +274,39 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 |---|---|---|
 | `dnf5` | **epel10** | Already EL10-native — keep as-is! |
 
-### SCM Packages from skip77 GitLab (4 packages)
+### GitHub-Forks (5 packages — all under `github.com/endegelaende/`)
 
-These require forking skip77's GitLab repos or mirroring them:
+These packages have minimal EL10 patches on top of clean Fedora specs. Each repo contains a `.copr/Makefile` for the `make_srpm` build method. See `forks/README.md` for detailed patch descriptions.
 
-| Package | GitLab URL | Branch | Notes |
-|---|---|---|---|
-| `xorg-x11-drv-qxl` | `gitlab.com/SkipGrube/skips_el_extras/rpms/xorg-x11-drv-qxl.git` | rocky10 | QXL VM driver — custom patches for EL10 |
-| `lightdm` | `gitlab.com/SkipGrube/skips_el_extras/rpms/lightdm.git` | rawhide | LightDM — custom EL10 adjustments |
-| `mate-settings-daemon` | `gitlab.com/SkipGrube/skips_el_extras/rpms/mate-settings-daemon.git` | rawhide | Patched for EL10 |
-| `mintmenu` | `gitlab.com/SkipGrube/skips_el_extras/rpms/mintmenu.git` | r10 | Linux Mint menu for MATE |
+| Package | Repo | Branch | Base | EL10 Patch |
+|---|---|---|---|---|
+| `system-config-printer` | `rpms-system-config-printer` | `f43-el10` | Fedora f43 | RHEL>8 conditional removed → GUI builds |
+| `qadwaitadecorations` | `rpms-qadwaitadecorations` | `f43-el10` | Fedora f43 | `%bcond_without qt5` → Qt5 enabled on EL10 |
+| `lightdm` | `rpms-lightdm` | `f43-el10` | Fedora f43 | Greeter dep bootstrap (circular dep), `pam_lastlog` |
+| `mate-settings-daemon` | `rpms-mate-settings-daemon` | `f43-el10` | Fedora f43 | Patch0 unconditional (otherwise not in SRPM) |
+| `xorg-x11-drv-qxl` | `rpms-xorg-x11-drv-qxl` | `f43-el10` | Fedora f43 | Xspice disabled (no `spice-server-devel` on EL10) |
+| ~~`mintmenu`~~ | ~~`rpms-mintmenu`~~ | ~~`r10`~~ | ~~Community packaging~~ | **DEPRECATED** — not installed in image |
 
-**Action required:**
-1. Fork these 4 repos to your own GitHub/GitLab
-2. Point COPR SCM sources to your forks
-3. Periodically sync upstream changes from skip77
+Formerly upload, now on SCM: `system-config-printer`, `qadwaitadecorations` (→ GitHub forks), `mozo`, `network-manager-applet`, `libreport` (→ Fedora distgit).
 
-### Upload Packages (16 SRPMs — manual maintenance)
+### Upload Packages (11 SRPMs — all dead/stable/deprecated)
 
-These were uploaded as `.src.rpm` files. The COPR temporary URLs are **not permanent** —
-we must download the built SRPMs from the COPR build results.
+These were uploaded as `.src.rpm` files. All have dead or frozen upstream —
+they will never need updating.
 
 | Package | Version | Stability | Notes |
 |---|---|---|---|
 | `libxklavier` | 5.4-29.el10 | 🟢 Stable (dead upstream) | Keyboard layout lib |
 | `python-distutils-extra` | 2.39-36.el10 | 🟢 Stable | Python build helper |
 | `libXpresent` | 1.0.0-1.el10 | 🟢 Stable | X Present extension |
-| `mozo` | 1.28.0-1.el10 | 🟡 MATE release cycle | Menu editor |
 | `beesu` | 2.7-1.el10 | 🟢 Stable (dead upstream) | GUI privilege escalation |
-| `compiz` | 0.8.18-17.el10 | 🟡 Occasional updates | Core compositor |
+| `compiz` | 0.8.18-17.el10 | 🟡 Frozen | Core compositor (circular dep bootstrap) |
 | `compiz-manager` | 0.7.0-24.el10 | 🟢 Stable | Compiz launcher |
 | `usermode` | 1.114-13.el10 | 🟢 Stable | User privilege helper |
-| `libreport` | 2.17.15-8.el10 | 🟡 Bugfix updates | Crash reporting lib |
-| ~~`libyui`~~ | ~~4.2.16-25.el10~~ | ~~🟡 Occasional updates~~ | ~~UI abstraction lib~~ — **DEPRECATED**: dnfdragora dep |
+| ~~`libyui`~~ | ~~4.2.16-25.el10~~ | ~~🟡~~ | ~~UI abstraction~~ — **DEPRECATED** |
 | `t1lib` | 5.1.2-42.el10 | 🟢 Stable (dead upstream) | Type 1 font lib |
 | `libglade2` | 2.6.4-36.el10 | 🟢 Stable (dead upstream) | GTK2 UI builder |
 | `p7zip` | 16.02-33.el10 | 🟢 Stable (dead upstream) | 7-Zip implementation |
-| `network-manager-applet` | 1.36.0-100.el10 | 🟡 NM release cycle | NM tray applet |
-| `system-config-printer` | 1.5.18-16.el10 | 🟡 Occasional updates | Printer config |
-| `qadwaitadecorations` | 0.1.4-3.el10 | 🟢 Stable | Qt Adwaita decorations |
-
-**Stability legend:**
-- 🟢 Dead upstream or very stable — will likely never need updating
-- 🟡 Active upstream — check for updates every few months
 
 ## Setup Instructions
 
@@ -332,7 +323,7 @@ we must download the built SRPMs from the COPR build results.
 copr-cli create \
   --chroot rhel+epel-10-x86_64 \
   --chroot rhel+epel-10-aarch64 \
-  --description "MATE Desktop for AlmaLinux/EL10 — fork of skip77/MateDesktop-EL10 for Querencia Linux" \
+  --description "MATE Desktop for AlmaLinux/EL10 — Querencia Linux" \
   --instructions "See https://github.com/endegelaende/querencia-linux for usage" \
   --repo "https://download.rockylinux.org/pub/rocky/\$releasever/devel/\$basearch/os/" \
   --repo "https://dl.fedoraproject.org/pub/epel/\${releasever}z/Everything/\$basearch/" \
@@ -351,7 +342,7 @@ See `setup-copr-fork.sh` for the full automation script.
 
 ### Step 3: Update the Querencia Linux Repo File
 
-Replace the skip77 repo with your own in `files/system/etc/yum.repos.d/`:
+Ensure the winonaoctober COPR repo is configured in `files/system/etc/yum.repos.d/`:
 
 ```ini
 [copr:copr.fedorainfracloud.org:winonaoctober:MateDesktop-EL10]
@@ -419,24 +410,13 @@ jobs:
 
 1. Check if the `f43` branch spec requires a dependency not in EL10
 2. Try `f42` branch as fallback, then `f41`
-3. If all fail, the package may need a patch — check skip77's GitLab for EL10-specific fixes
-4. As last resort, download the working SRPM from skip77's COPR and upload manually
-5. When `f43` reaches EOL (~Dec 2026), bump default to `f44` and re-test all packages
+3. If all fail, check `copr-fork/forks/README.md` for known EL10 patches and create a GitHub fork
+4. When `f43` reaches EOL (~Dec 2026), bump default to `f44` and re-test all packages
 
-### Monitoring skip77's COPR
+### Monitoring Builds
 
-Periodically check if skip77 adds new packages or updates uploaded SRPMs:
-
-```bash
-# Compare package lists
-curl -s "https://copr.fedorainfracloud.org/api_3/package/list?ownername=skip77&projectname=MateDesktop-EL10&limit=200" \
-  | jq -r '.items[].name' | sort > /tmp/skip77-packages.txt
-
-copr-cli list-packages winonaoctober/MateDesktop-EL10 --output-format text-row \
-  | awk '{print $1}' | sort > /tmp/our-packages.txt
-
-diff /tmp/skip77-packages.txt /tmp/our-packages.txt
-```
+Check the COPR monitor page for build status:
+- https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/monitor/
 
 ## Files in This Directory
 
@@ -444,18 +424,28 @@ diff /tmp/skip77-packages.txt /tmp/our-packages.txt
 |---|---|
 | `README.md` | This documentation |
 | `setup-copr-fork.sh` | One-time setup: creates all packages in your COPR project |
-| `rebuild-all.sh` | Triggers rebuild of all SCM packages |
-| `download-srpms.sh` | Downloads all 16 upload SRPMs from skip77's COPR |
+| `rebuild-all.sh` | Triggers rebuild of all SCM packages (skips deprecated packages where `auto_rebuild: false`) |
+| `rebuild-failed.sh` | Detect and rebuild failed packages in dependency order |
+| `download-srpms.sh` | Downloads SRPMs from COPR build results |
+| `migrate-to-forks.sh` | Upload→SCM migration script (✅ completed 2026-03-13) |
+| `migrate-to-forks-curl.sh` | curl-based migration (without copr-cli, for Windows) |
 | `packages.json` | Machine-readable package inventory with branch mappings |
+| `forks/` | Patch documentation and reference materials for GitHub fork repos |
+
+> **Note:** Several packages in `packages.json` are marked `"auto_rebuild": false` —
+> these are deprecated packages (e.g. `dnfdragora`, the `libyui-*` family,
+> `python-manatools`, `mintmenu`) that are excluded from the image build. Both `rebuild-all.sh`
+> and `rebuild-failed.sh` skip these packages during automated rebuilds. They remain
+> in the inventory for reference but will not be rebuilt unless explicitly requested
+> with `--package`.
 
 ## Risk Assessment
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| skip77 COPR goes offline | Low | 🔴 Critical | This fork |
+| Upstream Fedora drops MATE from distgit | Low (years) | 🔴 Critical | We have all specs + SRPMs, can self-host |
 | f43 spec needs dep not in EL10 | Low | 🟡 Medium | Fall back to f42/f41 for that package |
 | f43 reaches EOL (Dec 2026) | Certain | 🟢 Low | Bump to f44, MATE specs are stable across releases |
 | EL10 major rebase breaks builds | Low | 🟡 Medium | Adjust branch per package, test after rebase |
 | New MATE release needs newer deps | Medium | 🟡 Medium | Stay on current version, don't chase upstream |
-| Upload SRPMs become outdated | Medium | 🟢 Low | Most are dead upstream; NM-applet matters most |
-| Fedora drops MATE entirely | Low (years) | 🔴 Critical | We have the SRPMs + specs, can self-host |
+| Fedora drops MATE entirely | Low (years) | 🔴 Critical | We have complete inventory (`packages.json`) + all specs and SRPMs |

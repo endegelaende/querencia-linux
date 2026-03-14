@@ -16,9 +16,9 @@ printf '%s\n' \
     'CPE_NAME="cpe:/o:almalinux:almalinux:10"' \
     'HOME_URL="https://github.com/endegelaende/querencia-linux"' \
     'BUG_REPORT_URL="https://github.com/endegelaende/querencia-linux/issues"' \
-    'VARIANT="MATE Desktop"' \
-    'VARIANT_ID=mate' \
+    'LOGO=almalinux' \
     > /usr/lib/os-release
+# Note: VARIANT_ID is set by 91-image-info.sh (template) — do not set it here.
 ln -sf ../usr/lib/os-release /etc/os-release
 
 # /etc/issue -- text console login prompt

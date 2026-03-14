@@ -4,7 +4,7 @@
 #
 # NOTE: We install packages explicitly instead of using dnf groupinstall because
 # our winonaoctober COPR fork does not ship a comps.xml group definition.
-# The package list below is derived from skip77's MATE-Desktop group, filtered
+# The package list below covers the full MATE Desktop environment, filtered
 # to exclude bloat apps (they belong in Flatpak on an immutable system).
 set -xeuo pipefail
 
@@ -15,15 +15,10 @@ dnf install -y \
     xorg-x11-xinit \
     xorg-x11-drv-libinput \
     xorg-x11-drv-evdev \
-    xorg-x11-drv-amdgpu \
-    xorg-x11-drv-ati \
     xorg-x11-drv-wacom \
     xmodmap \
     xrdb \
-    glx-utils \
-    mesa-dri-drivers \
-    mesa-vulkan-drivers \
-    plymouth-system-theme
+    glx-utils
 
 # ---- MATE Desktop Core -------------------------------------------------------
 dnf install -y \
@@ -93,7 +88,6 @@ dnf install -y caja-xattr-tags || true
 dnf install -y \
     lightdm \
     lightdm-gtk \
-    slick-greeter-mate \
     lightdm-gtk-greeter
 
 # ---- Desktop Integration -----------------------------------------------------
@@ -166,14 +160,9 @@ TMPFILES
 # lightdm.conf setting of greeter-session=lightdm-gtk-greeter.
 rm -f /usr/share/lightdm/lightdm.conf.d/90-slick-greeter.conf
 
-# Also create them now for the build layer
-mkdir -p /var/lib/lightdm-data
-mkdir -p /var/cache/lightdm
-mkdir -p /var/log/lightdm
-chown lightdm:lightdm /var/lib/lightdm-data 2>/dev/null || true
-chown lightdm:lightdm /var/cache/lightdm 2>/dev/null || true
-chown root:lightdm /var/log/lightdm 2>/dev/null || true
-chmod 0750 /var/log/lightdm 2>/dev/null || true
+# Note: No need to mkdir /var/lib/lightdm-data etc. here — cleanup.sh wipes
+# /var entirely. The tmpfiles.d config above + greeter-setup-script in
+# lightdm.conf handle runtime directory creation on every boot.
 
 # Ensure MATE session file exists for LightDM
 if [ ! -f /usr/share/xsessions/mate.desktop ]; then

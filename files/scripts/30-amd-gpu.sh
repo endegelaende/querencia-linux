@@ -13,7 +13,9 @@ dnf install -y \
     vulkan-loader \
     vulkan-tools \
     libva \
-    linux-firmware
+    linux-firmware \
+    xorg-x11-drv-amdgpu \
+    xorg-x11-drv-ati
 
 # Optional VA-API / VDPAU packages (names may vary across EL versions)
 dnf install -y mesa-va-drivers || true

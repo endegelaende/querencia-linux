@@ -383,15 +383,22 @@ System-wide defaults that users can override individually:
 
 ```
 querencia-linux/
-├── .github/workflows/        ← GitHub Actions CI pipeline (atomic-ci v11)
+├── .github/
+│   ├── actions/              ← Reusable action configs
+│   └── workflows/            ← CI pipeline: build.yml + build-iso.yml
 ├── assets/
-│   └── querencia-logo.svg    ← Project logo (used in Plymouth + README)
+│   ├── querencia-logo.svg    ← Project logo (used in Plymouth + README)
+│   └── querencia{1,2,3}.png  ← Pre-rendered Plymouth boot splash (3 sizes)
 ├── copr-fork/                ← COPR fork docs, package inventory, scripts
 │   ├── README.md             ← Strategy, package tables, setup instructions
 │   ├── packages.json         ← All 128 COPR packages (machine-readable)
 │   ├── setup-copr-fork.sh    ← Automated COPR project setup
-│   ├── rebuild-all.sh        ← Rebuild all SCM packages
-│   └── download-srpms.sh     ← Download SRPMs from COPR
+│   ├── rebuild-all.sh        ← Rebuild all SCM packages (skips deprecated)
+│   ├── rebuild-failed.sh     ← Detect and rebuild failed packages in dep order
+│   ├── download-srpms.sh     ← Download SRPMs from COPR build results
+│   ├── migrate-to-forks.sh   ← Upload→SCM migration (completed)
+│   ├── migrate-to-forks-curl.sh ← curl-based migration (Windows)
+│   └── forks/                ← Patch docs + specs for 5 GitHub fork repos
 ├── files/
 │   ├── scripts/
 │   │   ├── 10-repos.sh       ← EPEL, CRB, Rocky Devel, winonaoctober COPR, RPM Fusion
@@ -402,15 +409,18 @@ querencia-linux/
 │   │   ├── 40-network.sh     ← NetworkManager, WiFi, OpenVPN, WireGuard, Bluetooth, Firewall
 │   │   ├── 45-system-tools.sh ← Firefox, htop, nano, git, SELinux troubleshooter, Redshift
 │   │   ├── 46-printing.sh    ← CUPS + SANE scanner backends
-│   │   ├── 50-micromamba.sh   ← Micromamba binary to /usr/local/bin
+│   │   ├── 50-micromamba.sh   ← Micromamba binary to /usr/bin
 │   │   ├── 55-flatpak.sh     ← Flatpak + Flathub remote
 │   │   ├── 60-distrobox.sh   ← Distrobox + Podman
-│   │   ├── 70-services.sh    ← fstrim.timer
 │   │   ├── 71-zram.sh        ← ZRAM compressed swap (50% RAM, zstd)
 │   │   ├── 72-plymouth.sh    ← Plymouth boot splash with Querencia logo
 │   │   ├── 75-post-install.sh ← First-boot service, auto-update, ujust, sysctl, polkit
 │   │   ├── 80-branding.sh    ← os-release, /etc/issue
-│   │   └── 85-amd-tuning.sh  ← amdgpu module + ppfeaturemask
+│   │   ├── 85-amd-tuning.sh  ← amdgpu module + ppfeaturemask
+│   │   ├── 90-signing.sh     ← Cosign key setup (template — do not modify)
+│   │   ├── 91-image-info.sh  ← VARIANT_ID in os-release (template — do not modify)
+│   │   ├── build.sh          ← Build orchestrator (template — do not modify)
+│   │   └── cleanup.sh        ← Image cleanup (template — do not modify)
 │   └── system/               ← Files overlaid onto / during build
 │       ├── etc/dconf/        ← MATE defaults (BlueMenta, Noto, screenshot keys)
 │       ├── etc/fonts/        ← Fontconfig (subpixel rendering, Noto fallback)
@@ -418,8 +428,11 @@ querencia-linux/
 │       ├── etc/profile.d/    ← Micromamba shell integration
 │       ├── etc/yum.repos.d/  ← winonaoctober MATE COPR + Rocky Devel repos
 │       └── usr/share/justfiles/ ← ujust recipes
+├── .gitattributes            ← Enforce LF line endings
 ├── Dockerfile                ← Multi-stage build (AlmaLinux bootc:10 base)
+├── LICENSE                   ← MIT license
 ├── Makefile                  ← Local build, ISO, QCOW2, QEMU targets
+├── almalinux-bootc.pub       ← Cosign public key (template — do not modify)
 ├── iso.toml                  ← ISO installer config (interactive Anaconda)
 └── README.md                 ← This file
 ```
@@ -428,13 +441,14 @@ querencia-linux/
 
 ## COPR Fork
 
-All MATE Desktop packages come from our own COPR: **[winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/)** — a fork of skip77's COPR for supply-chain independence.
+All MATE Desktop packages come from our own COPR: **[winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/)** — an independent MATE Desktop repository for EL10, with no external runtime dependencies.
 
 | Detail | Value |
 |---|---|
-| **Total packages** | 128 (108 SCM from Fedora, 4 SCM from GitLab, 16 uploaded SRPMs) |
-| **Auto-rebuild** | 102 packages (pinned to Fedora `f43` branch) |
-| **Deprecated** | 7 packages (dnfdragora + libyui chain — useless on immutable system) |
+| **Total packages** | 128 (111 SCM from Fedora distgit, 5 GitHub forks, 11 upload SRPMs, 1 deprecated fork) |
+| **Auto-rebuild** | 107 packages (pinned to Fedora `f43` branch) |
+| **GitHub forks** | 5 packages under [`endegelaende/`](https://github.com/endegelaende) with minimal EL10 patches |
+| **Deprecated** | 8 packages (dnfdragora + libyui chain + mintmenu — not used in image) |
 | **Architectures** | x86_64 + aarch64 |
 
 See [`copr-fork/README.md`](copr-fork/README.md) for full package inventory, branch strategy, and maintenance docs.
@@ -464,7 +478,7 @@ Any GPU supported by the open-source `amdgpu` driver works out of the box — Me
 <details>
 <summary><b>Where do the MATE packages come from?</b></summary>
 
-From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — a fork with 128 packages. See [`copr-fork/`](copr-fork/) for details.
+From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — 128 packages, all under our control. 111 are built directly from Fedora distgit, 6 from our own GitHub forks with minimal EL10 patches, and 11 are stable/frozen upload SRPMs. See [`copr-fork/`](copr-fork/) for details.
 </details>
 
 <details>
@@ -498,6 +512,12 @@ MATE is lightweight, classic, and fast. AlmaLinux already provides official GNOM
 </details>
 
 ---
+
+## Acknowledgments
+
+- **[Skip Grube (skip77)](https://copr.fedorainfracloud.org/coprs/skip77/MateDesktop-EL10/)** — Pioneered MATE Desktop packaging for EL10. His COPR was the original (and only) source of MATE packages for AlmaLinux/Rocky 10 and provided the foundation that made this project possible. We built our independent fork on the groundwork he laid.
+- **[AlmaLinux](https://almalinux.org/)** — Base image and the [Atomic Respin Template](https://github.com/AlmaLinux/atomic-respin-template) that this project is built on.
+- **[MATE Desktop](https://mate-desktop.org/)** — The desktop environment at the heart of Querencia.
 
 ## License
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# download-srpms.sh — Download SRPMs from skip77's COPR build results
+# download-srpms.sh — Download SRPMs from COPR build results
 #
 # The COPR API returns SRPM URLs under /srpm-builds/ which get cleaned up.
 # The actual SRPMs are still available in the per-chroot build result dirs:
-#   /results/skip77/MateDesktop-EL10/rhel+epel-10-x86_64/<buildid>-<name>/
+#   /results/OWNER/PROJECT/rhel+epel-10-x86_64/<buildid>-<name>/
 #
 # This script finds the build ID via the API, then downloads the .src.rpm
 # from the build result directory.
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 COPR_API="https://copr.fedorainfracloud.org/api_3"
-DOWNLOAD_BASE="https://download.copr.fedorainfracloud.org/results/skip77/MateDesktop-EL10/rhel+epel-10-x86_64"
+DOWNLOAD_BASE="https://download.copr.fedorainfracloud.org/results/winonaoctober/MateDesktop-EL10/rhel+epel-10-x86_64"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRPM_DIR="$SCRIPT_DIR/srpms"
 PACKAGES_JSON="$SCRIPT_DIR/packages.json"
@@ -38,7 +38,7 @@ count=0
 ok=0
 fail=0
 
-echo "=== Downloading SRPMs from skip77/MateDesktop-EL10 ==="
+echo "=== Downloading SRPMs from winonaoctober/MateDesktop-EL10 ==="
 echo "    Packages to download: $total"
 echo ""
 
@@ -48,7 +48,7 @@ for name in $upload_pkgs; do
 
     # Get build ID from API
     response=$(curl -s --max-time 15 \
-        "${COPR_API}/package?ownername=skip77&projectname=MateDesktop-EL10&packagename=${name}&with_latest_succeeded_build=true" \
+        "${COPR_API}/package?ownername=winonaoctober&projectname=MateDesktop-EL10&packagename=${name}&with_latest_succeeded_build=true" \
         2>/dev/null)
 
     if [[ -z "$response" ]]; then

@@ -1,5 +1,6 @@
 # Project context (local only, not for GitHub)
 CLAUDE.md
+UPDATE.md
 
 # Build artifacts
 *.img
@@ -53,3 +54,8 @@ logs/
 # COPR fork setup
 copr-fork/srpms/
 copr-fork/setup-copr-fork.log
+
+# COPR build logs (never commit)
+*-log
+*-log[0-9]*
+*-final

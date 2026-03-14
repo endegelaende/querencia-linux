@@ -499,3 +499,223 @@ codec-test:
         || mpv /tmp/bbb_trailer.mp4 2>/dev/null \
         || xdg-open /tmp/bbb_trailer.mp4 2>/dev/null \
         || echo "No video player found. Install one: flatpak install flathub io.github.celluloid_player.Celluloid"
+
+# =============================================================================
+# Diagnostics & Troubleshooting (inspired by Bluefin)
+# =============================================================================
+
+# Collect system diagnostics and upload to a pastebin (shareable URL for support)
+device-info:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Collecting system diagnostics..."
+    echo ""
+    TMPFILE=$(mktemp /tmp/querencia-diag-XXXXXX.txt)
+    {
+        echo "=== Querencia Linux — Device Info ==="
+        echo "Generated: $(date -Iseconds)"
+        echo ""
+        echo "=== OS Release ==="
+        cat /etc/os-release 2>/dev/null || echo "not available"
+        echo ""
+        echo "=== Kernel ==="
+        uname -a
+        echo ""
+        echo "=== bootc Status ==="
+        sudo bootc status 2>/dev/null || echo "bootc not available"
+        echo ""
+        echo "=== Hardware ==="
+        echo "-- CPU --"
+        lscpu 2>/dev/null | grep -E "Model name|Architecture|CPU\(s\)|Thread|Core" || echo "lscpu not available"
+        echo ""
+        echo "-- Memory --"
+        free -h
+        echo ""
+        echo "-- GPU --"
+        lspci -k 2>/dev/null | grep -A3 -i vga || echo "lspci not available"
+        echo ""
+        echo "-- Disk --"
+        df -h / /boot /var/home 2>/dev/null || df -h /
+        echo ""
+        echo "-- Block Devices --"
+        lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT 2>/dev/null || echo "lsblk not available"
+        echo ""
+        echo "=== SWAP ==="
+        swapon --show 2>/dev/null || echo "no swap"
+        echo ""
+        echo "=== Network ==="
+        nmcli -t -f NAME,TYPE,DEVICE,STATE con show 2>/dev/null || echo "nmcli not available"
+        echo ""
+        echo "=== Installed RPMs ==="
+        rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' 2>/dev/null | sort || echo "rpm not available"
+        echo ""
+        echo "=== Flatpaks ==="
+        flatpak list --columns=name,application,version,branch 2>/dev/null || echo "no flatpaks"
+        echo ""
+        echo "=== Distroboxes ==="
+        distrobox list 2>/dev/null || echo "no distroboxes"
+        echo ""
+        echo "=== systemd Failed Units ==="
+        systemctl --failed --no-pager 2>/dev/null || true
+        echo ""
+        echo "=== SELinux ==="
+        getenforce 2>/dev/null || echo "SELinux status unknown"
+        echo ""
+        echo "=== Recent Errors (last 25 lines, this boot) ==="
+        journalctl -b 0 -p err --no-pager -n 25 2>/dev/null || echo "no errors"
+    } > "${TMPFILE}" 2>&1
+    echo "Diagnostics collected ($(wc -l < "${TMPFILE}") lines)."
+    echo ""
+    echo "Uploading to ix.io..."
+    URL=$(curl -sF 'f:1=<'"${TMPFILE}" ix.io 2>/dev/null) || true
+    if [ -n "${URL}" ]; then
+        echo ""
+        echo "Share this URL for support:"
+        echo "  ${URL}"
+        echo ""
+        echo "(URL copied to clipboard if xclip is available)"
+        echo "${URL}" | xclip -selection clipboard 2>/dev/null || true
+    else
+        echo "Upload failed. Diagnostics saved locally:"
+        echo "  ${TMPFILE}"
+        echo ""
+        echo "You can share it manually:  curl -F 'f:1=<${TMPFILE}' ix.io"
+    fi
+
+# Reboot into BIOS/UEFI firmware setup
+bios:
+    @echo "Rebooting into BIOS/UEFI setup..."
+    @echo "The system will reboot NOW and enter firmware setup."
+    @echo ""
+    @read -p "Press Enter to continue or Ctrl+C to cancel... " _confirm
+    systemctl reboot --firmware-setup
+
+# Show BIOS/UEFI information
+bios-info:
+    @echo "BIOS/UEFI Information:"
+    @echo ""
+    @echo "  Manufacturer: $(cat /sys/class/dmi/id/board_vendor 2>/dev/null || echo 'unknown')"
+    @echo "  Product:      $(cat /sys/class/dmi/id/product_name 2>/dev/null || echo 'unknown')"
+    @echo "  BIOS Version: $(cat /sys/class/dmi/id/bios_version 2>/dev/null || echo 'unknown')"
+    @echo "  BIOS Date:    $(cat /sys/class/dmi/id/bios_date 2>/dev/null || echo 'unknown')"
+
+# Show all system logs from the current boot
+logs-this-boot:
+    @echo "Logs from current boot session:"
+    @echo "(Use arrow keys to scroll, q to quit)"
+    @echo ""
+    journalctl -b 0 --no-pager | less
+
+# Show all system logs from the previous boot
+logs-last-boot:
+    @echo "Logs from previous boot session:"
+    @echo "(Use arrow keys to scroll, q to quit)"
+    @echo ""
+    journalctl -b -1 --no-pager | less
+
+# Show only errors from the current boot
+logs-errors:
+    @echo "Errors from current boot session:"
+    @echo ""
+    journalctl -b 0 -p err --no-pager
+
+# Show only errors from the previous boot
+logs-errors-last:
+    @echo "Errors from previous boot session:"
+    @echo ""
+    journalctl -b -1 -p err --no-pager
+
+# Run a 60-second system benchmark (CPU + Memory)
+benchmark:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v stress-ng &>/dev/null; then
+        echo "stress-ng not found. Installing via micromamba..."
+        if command -v micromamba &>/dev/null; then
+            micromamba install -n base -c conda-forge -y stress-ng 2>/dev/null || true
+        fi
+        if ! command -v stress-ng &>/dev/null; then
+            echo "Could not install stress-ng. Install it manually:"
+            echo "  micromamba install -n base -c conda-forge stress-ng"
+            echo "  -- or --"
+            echo "  distrobox enter alma -- sudo dnf install stress-ng"
+            exit 1
+        fi
+    fi
+    CPUS=$(nproc)
+    echo "=== Querencia Linux — System Benchmark ==="
+    echo "CPUs: ${CPUS} | Duration: 60 seconds"
+    echo "Press Ctrl+C to cancel"
+    echo ""
+    echo "Starting benchmark..."
+    echo ""
+    stress-ng --cpu "${CPUS}" --vm 1 --vm-bytes 75% --timeout 60s --metrics-brief
+    echo ""
+    echo "Benchmark complete."
+
+# Check idle power consumption (requires powerstat or turbostat)
+check-idle-power:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v powerstat &>/dev/null; then
+        echo "Measuring idle power draw (30 seconds, 10 samples)..."
+        echo "Keep the system idle during measurement."
+        echo ""
+        sudo powerstat -d 0 -n 10 -s 3
+    elif command -v turbostat &>/dev/null; then
+        echo "Measuring with turbostat (10 seconds)..."
+        echo ""
+        sudo turbostat --quiet --show PkgWatt,CorWatt,GFXWatt --interval 2 --num_iterations 5
+    else
+        echo "No power measurement tool found."
+        echo "Reading from RAPL (if available)..."
+        echo ""
+        if [ -d /sys/class/powercap/intel-rapl:0 ]; then
+            E1=$(cat /sys/class/powercap/intel-rapl:0/energy_uj)
+            sleep 5
+            E2=$(cat /sys/class/powercap/intel-rapl:0/energy_uj)
+            WATTS=$(echo "scale=2; ($E2 - $E1) / 5000000" | bc)
+            echo "Estimated package power: ${WATTS} W (5-second average)"
+        else
+            echo "RAPL not available. Try installing powerstat:"
+            echo "  micromamba install -n base -c conda-forge powerstat"
+        fi
+    fi
+
+# Show files that differ between system defaults (/usr/etc) and local overrides (/etc)
+check-local-overrides:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Checking for local overrides (/etc vs /usr/etc)..."
+    echo ""
+    if [ ! -d /usr/etc ]; then
+        echo "No /usr/etc found — this system may not use the /usr/etc pattern."
+        echo ""
+        echo "Showing non-default files in /etc owned by no package:"
+        rpm -Va --nofiles --nodigest 2>/dev/null | head -30 || echo "  (rpm verification not available)"
+        exit 0
+    fi
+    FOUND=0
+    while IFS= read -r -d '' usretc_file; do
+        etc_file="/etc${usretc_file#/usr/etc}"
+        if [ -f "${etc_file}" ]; then
+            if ! diff -q "${usretc_file}" "${etc_file}" &>/dev/null; then
+                if [ "${FOUND}" -eq 0 ]; then
+                    echo "Modified files (local overrides):"
+                    echo ""
+                fi
+                FOUND=$((FOUND + 1))
+                echo "  ${etc_file}"
+                echo "    (differs from ${usretc_file})"
+            fi
+        fi
+    done < <(find /usr/etc -type f -print0 2>/dev/null)
+    if [ "${FOUND}" -eq 0 ]; then
+        echo "No local overrides found. System is using all defaults."
+    else
+        echo ""
+        echo "${FOUND} file(s) with local overrides."
+        echo ""
+        echo "To inspect a specific file:"
+        echo "  diff /usr/etc/<path> /etc/<path>"
+    fi

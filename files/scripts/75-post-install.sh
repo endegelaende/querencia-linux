@@ -92,7 +92,7 @@ if command -v flatpak &>/dev/null; then
         --filesystem=/usr/share/themes:ro \
         --filesystem=/usr/share/icons:ro \
         --env=GTK_THEME=BlueMenta \
-        --env=XCURSOR_THEME=default \
+        --env=XCURSOR_THEME=Adwaita \
         --env=XCURSOR_SIZE=24 \
         2>/dev/null || true
 fi
@@ -121,7 +121,10 @@ if command -v notify-send &>/dev/null; then
     notify-send \
         --icon=dialog-information \
         "Querencia Linux" \
-        "Welcome. Your system is ready.\nBrowse apps: Warehouse (Flatpak Store) in your menu\nInstall packages: micromamba install <pkg>\nRun 'ujust --list' for more commands." \
+"Welcome. Your system is ready.
+Browse apps: Warehouse (Flatpak Store) in your menu
+Install packages: micromamba install <pkg>
+Run 'ujust --list' for more commands." \
         2>/dev/null || true
 fi
 FIRSTBOOT
@@ -171,24 +174,65 @@ LOGFILE="/var/log/querencia-auto-update.log"
 exec >> "${LOGFILE}" 2>&1
 echo "=== $(date -Iseconds) ==="
 
+# Skip updates on metered connections (mobile data, tethering, etc.)
+# NetworkManager reports "yes" for metered connections.
+# Users can toggle this in Settings → Network → a connection → "Metered Connection".
+if command -v nmcli &>/dev/null; then
+    if nmcli -t -f GENERAL.METERED dev show 2>/dev/null | grep -qi ":yes"; then
+        echo "Metered connection detected — skipping update to save data."
+        echo "To force an update: sudo systemctl start querencia-auto-update.service"
+        echo "Or disable metered mode in Network settings."
+        echo "=== Done (skipped) ==="
+        exit 0
+    fi
+fi
+
 IMAGE_UPDATED=false
 
 # Stage new bootc image (applied on next reboot)
-# bootc upgrade: exit 0 = update staged, non-zero = already current or error
+# Strategy: capture the booted image digest before upgrade, then compare
+# against the staged digest afterwards. Uses `bootc status --json` (stable API)
+# instead of fragile output text matching.
 echo "Checking for bootc image updates..."
-bootc upgrade 2>&1 || rc=$?
-rc=${rc:-0}
-if [ "${rc}" -eq 0 ]; then
-    echo "New image staged. Will apply on next reboot."
-    IMAGE_UPDATED=true
+
+# Capture current booted image digest (before upgrade)
+BOOTED_DIGEST=""
+if command -v jq &>/dev/null; then
+    BOOTED_DIGEST=$(bootc status --json 2>/dev/null \
+        | jq -r '.status.booted.image.imageDigest // empty' 2>/dev/null) || true
+fi
+echo "Booted image digest: ${BOOTED_DIGEST:-unknown}"
+
+# Run the upgrade (stdout/stderr already go to LOGFILE via exec >>)
+bootc upgrade 2>&1 || true
+
+# Check if a new image was staged (after upgrade)
+if command -v jq &>/dev/null; then
+    STAGED_DIGEST=$(bootc status --json 2>/dev/null \
+        | jq -r '.status.staged.image.imageDigest // empty' 2>/dev/null) || true
+    if [ -n "${STAGED_DIGEST}" ] && [ "${STAGED_DIGEST}" != "${BOOTED_DIGEST}" ]; then
+        echo "New image staged (digest: ${STAGED_DIGEST}). Will apply on next reboot."
+        IMAGE_UPDATED=true
+    elif [ -n "${STAGED_DIGEST}" ]; then
+        echo "System is up to date (staged image matches booted)."
+    else
+        echo "No staged deployment found — system is up to date."
+    fi
 else
-    echo "No update available (bootc exit code ${rc})."
+    # Fallback if jq is somehow missing: treat any upgrade run as potentially staged
+    echo "Warning: jq not found — cannot verify staged image digest."
+    echo "Assuming upgrade completed successfully."
 fi
 
-# Update Flatpak apps
+# Update Flatpak apps (system-wide and per-user)
 if command -v flatpak &>/dev/null; then
-    echo "Updating Flatpak apps..."
+    echo "Updating system Flatpak apps..."
     flatpak update -y --noninteractive 2>/dev/null || true
+    echo "Updating user Flatpak apps..."
+    while IFS= read -r user_name; do
+        [ -z "${user_name}" ] && continue
+        sudo -u "${user_name}" flatpak update --user -y --noninteractive 2>/dev/null || true
+    done < <(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}')
     flatpak uninstall --unused -y --noninteractive 2>/dev/null || true
     echo "Flatpak update complete."
 fi
@@ -196,19 +240,30 @@ fi
 # Notify logged-in desktop users about staged image update
 if [ "${IMAGE_UPDATED}" = true ]; then
     echo "Notifying desktop users..."
-    for user_id in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $1}'); do
-        user_name=$(loginctl list-users --no-legend 2>/dev/null | awk -v id="$user_id" '$1==id {print $2}')
-        if [ -n "${user_name}" ]; then
-            sudo -u "${user_name}" \
-                DISPLAY=:0 \
-                DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${user_id}/bus" \
-                notify-send \
-                    --icon=software-update-available \
-                    "System Update Available" \
-                    "A new Querencia Linux image has been staged.\nReboot to apply the update.\n\nRun 'ujust rollback' after reboot to undo." \
-                    2>/dev/null || true
+    while IFS= read -r _line; do
+        user_id=$(echo "$_line" | awk '{print $1}')
+        user_name=$(echo "$_line" | awk '{print $2}')
+        [ -z "${user_name}" ] && continue
+
+        # Use loginctl show-user to get session list (stable API, not column-based)
+        DISPLAY_VAL=""
+        SESSION_ID=$(loginctl show-user "${user_name}" -p Sessions --value 2>/dev/null | awk '{print $1}')
+        if [ -n "${SESSION_ID}" ]; then
+            DISPLAY_VAL=$(loginctl show-session "${SESSION_ID}" -p Display --value 2>/dev/null || echo ":0")
         fi
-    done
+        DISPLAY_VAL="${DISPLAY_VAL:-:0}"
+        sudo -u "${user_name}" \
+            DISPLAY="${DISPLAY_VAL}" \
+            DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${user_id}/bus" \
+            notify-send \
+                --icon=software-update-available \
+                "System Update Available" \
+"A new Querencia Linux image has been staged.
+Reboot to apply the update.
+
+Run 'ujust rollback' after reboot to undo." \
+                2>/dev/null || true
+    done < <(loginctl list-users --no-legend 2>/dev/null)
 fi
 
 echo "=== Done ==="
@@ -231,7 +286,13 @@ cat > /etc/motd <<'MOTD'
   ujust rollback     Roll back to previous image
   ujust info         Show system info
 
+  ujust device-info  Collect & share diagnostics (support URL)
+  ujust bios         Reboot into BIOS/UEFI setup
+  ujust logs-errors  Show errors from current boot
+  ujust benchmark    Run 60-second system stress test
+
   Auto-updates run every 6 hours (reboot to apply)
+  Updates are skipped on metered connections.
 
   Browse & install apps:
     Warehouse (Flatpak Store) — in your application menu

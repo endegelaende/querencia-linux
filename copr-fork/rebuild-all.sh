@@ -91,19 +91,21 @@ elif [[ -n "$FILTER_PHASE" ]]; then
         echo "Error: No packages found for phase $FILTER_PHASE." >&2
         exit 1
     fi
-    # Filter to only SCM packages present in the phase
+    # Filter to only SCM packages present in the phase (skip deprecated auto_rebuild: false)
     PACKAGE_NAMES=""
     while IFS= read -r pkg; do
-        st=$(jq -r --arg name "$pkg" \
-            '.packages[] | select(.name == $name) | .source_type' "$PACKAGES_JSON")
-        if [[ "$st" == "scm" ]]; then
+        match=$(jq -r --arg name "$pkg" \
+            '.packages[] | select(.name == $name) | "\(.source_type):\(.auto_rebuild)"' "$PACKAGES_JSON")
+        st="${match%%:*}"
+        ar="${match##*:}"
+        if [[ "$st" == "scm" && "$ar" != "false" ]]; then
             PACKAGE_NAMES+="$pkg"$'\n'
         fi
     done <<< "$phase_packages"
     PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | sed '/^$/d')
 else
-    # All SCM packages
-    PACKAGE_NAMES=$(jq -r '.packages[] | select(.source_type == "scm") | .name' "$PACKAGES_JSON")
+    # All SCM packages (skip deprecated packages where auto_rebuild is false)
+    PACKAGE_NAMES=$(jq -r '.packages[] | select(.source_type == "scm" and .auto_rebuild != false) | .name' "$PACKAGES_JSON")
 fi
 
 if [[ -z "$PACKAGE_NAMES" ]]; then
