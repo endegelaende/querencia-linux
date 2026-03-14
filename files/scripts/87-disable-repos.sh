@@ -36,6 +36,17 @@ for repo_file in /etc/yum.repos.d/*.repo; do
     filename=$(basename "$repo_file")
 
     case "$filename" in
+        # ── Disable NVIDIA / CUDA repos (match before almalinux-* catch-all) ──
+        almalinux-nvidia*.repo|cuda*.repo|nvidia*.repo)
+            if grep -qE '^enabled\s*=\s*1' "$repo_file" 2>/dev/null; then
+                echo "  DISABLE: $filename (NVIDIA/CUDA repo)"
+                sed -i 's/^enabled\s*=\s*1/enabled=0/' "$repo_file"
+                disabled_count=$((disabled_count + 1))
+            else
+                echo "  SKIP: $filename (already disabled or no enabled= line)"
+            fi
+            ;;
+
         # ── Keep AlmaLinux base repos enabled ──
         almalinux-*.repo)
             echo "  KEEP: $filename (base repo)"

@@ -37,7 +37,9 @@ for pkg in mate-desktop caja marco mate-panel mate-session-manager; do
 done
 
 # Display manager
-for pkg in lightdm lightdm-gtk-greeter; do
+# Note: The COPR RPM is named 'lightdm-gtk' (not 'lightdm-gtk-greeter').
+# It provides the lightdm-gtk-greeter binary but the package name differs.
+for pkg in lightdm lightdm-gtk; do
     rpm -q "$pkg" &>/dev/null && check_pass "$pkg installed" || check_fail "$pkg NOT installed"
 done
 
@@ -69,10 +71,11 @@ rpm -q plymouth &>/dev/null && check_pass "plymouth installed" || check_fail "pl
 # Atomic/immutable core
 rpm -q bootc &>/dev/null && check_pass "bootc installed" || check_fail "bootc NOT installed"
 
-# Hardware support for udev rules (Apple SuperDrive + Realtek USB Ethernet docks)
-for pkg in sg3_utils usb_modeswitch; do
-    rpm -q "$pkg" &>/dev/null && check_pass "$pkg installed" || check_fail "$pkg NOT installed"
-done
+# Hardware support for udev rules (Apple SuperDrive)
+rpm -q sg3_utils &>/dev/null && check_pass "sg3_utils installed" || check_fail "sg3_utils NOT installed"
+
+# usb_modeswitch (Realtek USB Ethernet docks) — optional, may not exist in EL10 repos
+rpm -q usb_modeswitch &>/dev/null && check_pass "usb_modeswitch installed" || check_pass "usb_modeswitch not available (optional on EL10)"
 
 echo ""
 
