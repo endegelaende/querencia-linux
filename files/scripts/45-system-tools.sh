@@ -43,3 +43,18 @@ dnf install -y setroubleshoot-plugins || true
 # Night mode / blue light filter (needs direct X11 gamma access, can't run in Flatpak sandbox)
 dnf install -y redshift || true
 dnf install -y redshift-gtk || true
+
+# Hardware support for udev rules (Apple SuperDrive + Realtek USB Ethernet docks)
+dnf install -y sg3_utils || true
+dnf install -y usb_modeswitch || true
+
+# iOS device support (iPhone/iPad mounting and file access)
+dnf install -y ifuse || true
+dnf install -y libimobiledevice || true
+dnf install -y usbmuxd || true
+
+# External monitor brightness/settings via DDC/CI protocol
+dnf install -y ddcutil || true
+
+# Power management (laptop power analysis and tuning)
+dnf install -y powertop || true

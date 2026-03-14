@@ -1,0 +1,29 @@
+# Realtek USB Ethernet adapters — force correct mode
+# Covers common USB-C docks and USB Ethernet dongles
+# Based on ublue-os/bluefin
+
+# Lenovo USB-C to Ethernet (RTL8153)
+ACTION=="add", ATTR{idVendor}=="17ef", ATTR{idProduct}=="720c", RUN+="/usr/sbin/usb_modeswitch -v 17ef -p 720c -R"
+ACTION=="add", ATTR{idVendor}=="17ef", ATTR{idProduct}=="7214", RUN+="/usr/sbin/usb_modeswitch -v 17ef -p 7214 -R"
+ACTION=="add", ATTR{idVendor}=="17ef", ATTR{idProduct}=="721e", RUN+="/usr/sbin/usb_modeswitch -v 17ef -p 721e -R"
+ACTION=="add", ATTR{idVendor}=="17ef", ATTR{idProduct}=="3082", RUN+="/usr/sbin/usb_modeswitch -v 17ef -p 3082 -R"
+ACTION=="add", ATTR{idVendor}=="17ef", ATTR{idProduct}=="3098", RUN+="/usr/sbin/usb_modeswitch -v 17ef -p 3098 -R"
+
+# TP-Link UE300 (RTL8153)
+ACTION=="add", ATTR{idVendor}=="2357", ATTR{idProduct}=="0601", RUN+="/usr/sbin/usb_modeswitch -v 2357 -p 0601 -R"
+
+# Samsung USB-C Ethernet (RTL8153)
+ACTION=="add", ATTR{idVendor}=="04e8", ATTR{idProduct}=="a101", RUN+="/usr/sbin/usb_modeswitch -v 04e8 -p a101 -R"
+
+# Realtek generic USB Ethernet
+ACTION=="add", ATTR{idVendor}=="0bda", ATTR{idProduct}=="8153", RUN+="/usr/sbin/usb_modeswitch -v 0bda -p 8153 -R"
+ACTION=="add", ATTR{idVendor}=="0bda", ATTR{idProduct}=="8156", RUN+="/usr/sbin/usb_modeswitch -v 0bda -p 8156 -R"
+
+# Microsoft Surface USB-C Ethernet
+ACTION=="add", ATTR{idVendor}=="045e", ATTR{idProduct}=="07c6", RUN+="/usr/sbin/usb_modeswitch -v 045e -p 07c6 -R"
+
+# Belkin USB-C to Ethernet
+ACTION=="add", ATTR{idVendor}=="050d", ATTR{idProduct}=="0128", RUN+="/usr/sbin/usb_modeswitch -v 050d -p 0128 -R"
+
+# NVIDIA (Mellanox) USB-C Ethernet
+ACTION=="add", ATTR{idVendor}=="0955", ATTR{idProduct}=="09ff", RUN+="/usr/sbin/usb_modeswitch -v 0955 -p 09ff -R"

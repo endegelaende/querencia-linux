@@ -271,6 +271,7 @@ AUTOUPDATE
 chmod +x /usr/libexec/querencia-auto-update
 
 systemctl enable querencia-auto-update.timer
+systemctl enable dconf-update.service
 
 # ---- MOTD --------------------------------------------------------------------
 cat > /etc/motd <<'MOTD'

@@ -1,0 +1,3 @@
+# Apple USB SuperDrive — send magic init command on plug-in
+# Without this, the drive is detected but won't read discs
+ACTION=="add", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="1500", DRIVERS=="usb", RUN+="/usr/bin/sg_raw %r/sr%n EA 00 00 00 00 00 01"

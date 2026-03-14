@@ -35,3 +35,18 @@ printf '%s\n' \
     '  Where Linux Feels at Home' \
     '' \
     > /etc/issue
+
+# ---- Image metadata (machine-readable) ----
+mkdir -p /usr/share/querencia
+cat > /usr/share/querencia/image-info.json <<EOF
+{
+  "image-name": "querencia-linux${VARIANT:+-$VARIANT}",
+  "image-vendor": "endegelaende",
+  "image-ref": "ghcr.io/endegelaende/querencia-linux${VARIANT:+-$VARIANT}",
+  "image-tag": "latest",
+  "base-image": "quay.io/almalinuxorg/almalinux-bootc:10",
+  "desktop": "mate",
+  "gpu-variant": "${GPU_LABEL}",
+  "build-date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF

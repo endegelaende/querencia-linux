@@ -31,7 +31,8 @@ LABEL org.opencontainers.image.vendor="endegelaende"
 LABEL org.opencontainers.image.version="10"
 LABEL ostree.bootable="true"
 
-RUN --mount=type=tmpfs,dst=/opt \
+RUN --mount=type=cache,dst=/var/cache/dnf \
+    --mount=type=tmpfs,dst=/opt \
     --mount=type=tmpfs,dst=/tmp \
     --mount=type=bind,from=ctx,source=/,target=/ctx \
     /ctx/build_files/build.sh

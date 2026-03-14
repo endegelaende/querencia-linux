@@ -45,7 +45,13 @@ nvidia)
     # Step 3: CUDA utilities (nvidia-smi, etc.) — optional
     dnf install -y nvidia-driver-cuda || true
 
-    # Step 4: Basic Mesa for software fallback / Wayland compatibility / Flatpak apps
+    # Step 4: Hybrid GPU switching (Intel/AMD iGPU + discrete NVIDIA)
+    # switcheroo-control exposes a D-Bus interface that lets desktop environments
+    # offer "Launch using Discrete GPU" context menu entries.
+    dnf install -y switcheroo-control
+    systemctl enable switcheroo-control.service
+
+    # Step 5: Basic Mesa for software fallback / Wayland compatibility / Flatpak apps
     # Even with NVIDIA as the primary GPU, Mesa provides software rasterizers
     # and the Vulkan loader that many applications expect to find.
     dnf install -y \
