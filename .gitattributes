@@ -24,6 +24,12 @@ Dockerfile text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
 
+# Python
+*.py text eol=lf
+
+# Desktop entries
+*.desktop text eol=lf
+
 # Binary files
 *.png binary
 *.jpg binary

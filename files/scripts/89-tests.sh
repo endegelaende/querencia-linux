@@ -248,6 +248,37 @@ else
     check_fail "sysctl desktop tweaks MISSING"
 fi
 
+# Welcome app
+if [ -f "/usr/lib/querencia/welcome/querencia-welcome.py" ]; then
+    check_pass "querencia-welcome.py exists"
+else
+    check_fail "querencia-welcome.py MISSING"
+fi
+
+if [ -x "/usr/bin/querencia-welcome" ]; then
+    check_pass "/usr/bin/querencia-welcome exists and is executable"
+else
+    check_fail "/usr/bin/querencia-welcome MISSING or not executable"
+fi
+
+if [ -x "/usr/bin/querencia-welcome-launcher" ]; then
+    check_pass "/usr/bin/querencia-welcome-launcher exists and is executable"
+else
+    check_fail "/usr/bin/querencia-welcome-launcher MISSING or not executable"
+fi
+
+if [ -f "/etc/xdg/autostart/querencia-welcome.desktop" ]; then
+    check_pass "querencia-welcome autostart desktop entry exists"
+else
+    check_fail "querencia-welcome autostart desktop entry MISSING"
+fi
+
+if [ -f "/usr/share/applications/querencia-welcome.desktop" ]; then
+    check_pass "querencia-welcome application menu entry exists"
+else
+    check_fail "querencia-welcome application menu entry MISSING"
+fi
+
 echo ""
 
 # =============================================================================

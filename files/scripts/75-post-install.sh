@@ -3,6 +3,12 @@
 # Sets up system-wide defaults that become active on first boot.
 set -xeuo pipefail
 
+# ---- Querencia Welcome App (permissions) ------------------------------------
+# Files are copied from system_files/ by build.sh but may lose +x in transit.
+chmod +x /usr/bin/querencia-welcome 2>/dev/null || true
+chmod +x /usr/bin/querencia-welcome-launcher 2>/dev/null || true
+chmod +x /usr/lib/querencia/welcome/querencia-welcome.py 2>/dev/null || true
+
 # ---- XDG User Directories (English defaults) --------------------------------
 mkdir -p /etc/xdg
 cat > /etc/xdg/user-dirs.defaults <<'EOF'
@@ -116,12 +122,16 @@ fi
 
 mkdir -p "${HOME}/.config"
 
-# Desktop notification
-if command -v notify-send &>/dev/null; then
+# Launch the Welcome Center (GUI first-boot experience)
+# Falls back to a simple notification if the welcome app is missing.
+if [ -x /usr/bin/querencia-welcome ]; then
+    /usr/bin/querencia-welcome &
+    disown 2>/dev/null || true
+elif command -v notify-send &>/dev/null; then
     notify-send \
         --icon=dialog-information \
         "Querencia Linux" \
-"Welcome. Your system is ready.
+"Welcome! Your system is ready.
 Browse apps: Warehouse (Flatpak Store) in your menu
 Install packages: micromamba install <pkg>
 Run 'ujust --list' for more commands." \

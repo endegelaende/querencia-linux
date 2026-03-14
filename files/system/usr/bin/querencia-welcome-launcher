@@ -1,0 +1,7 @@
+#!/bin/sh
+# Querencia Welcome -- Autostart Launcher
+# Only shows the welcome dialog if the user hasn't disabled it.
+FLAG="$HOME/.config/querencia-welcome/norun.flag"
+if [ ! -f "$FLAG" ]; then
+    exec querencia-welcome
+fi

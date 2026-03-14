@@ -26,6 +26,11 @@ _build/
 *~
 \#*\#
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
 # OS-specific
 .DS_Store
 Thumbs.db

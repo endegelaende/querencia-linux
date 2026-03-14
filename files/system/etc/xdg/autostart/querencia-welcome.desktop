@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Querencia Welcome
+Comment=Welcome screen for Querencia Linux
+Exec=querencia-welcome-launcher
+Icon=system-users
+Terminal=false
+NoDisplay=true
+Categories=
+X-MATE-Autostart-enabled=true

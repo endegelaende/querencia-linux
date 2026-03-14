@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Welcome to Querencia
+GenericName=Welcome Screen
+Comment=Introduction and first steps for Querencia Linux
+Exec=querencia-welcome
+Icon=system-users
+Terminal=false
+Categories=System;Settings;
+Keywords=welcome;first;setup;help;about;
+StartupNotify=true
