@@ -69,6 +69,11 @@ rpm -q plymouth &>/dev/null && check_pass "plymouth installed" || check_fail "pl
 # Atomic/immutable core
 rpm -q bootc &>/dev/null && check_pass "bootc installed" || check_fail "bootc NOT installed"
 
+# Hardware support for udev rules (Apple SuperDrive + Realtek USB Ethernet docks)
+for pkg in sg3_utils usb_modeswitch; do
+    rpm -q "$pkg" &>/dev/null && check_pass "$pkg installed" || check_fail "$pkg NOT installed"
+done
+
 echo ""
 
 # =============================================================================
@@ -79,6 +84,32 @@ echo "=== Package Absence ==="
 # dnfdragora is useless on immutable systems (no dnf install from desktop)
 # and confuses users by offering a GUI package manager that can't work
 rpm -q dnfdragora &>/dev/null && check_fail "dnfdragora is installed (should be absent)" || check_pass "dnfdragora not installed"
+
+echo ""
+
+# =============================================================================
+# ZRAM — essential for desktop responsiveness
+# =============================================================================
+echo "=== ZRAM Configuration ==="
+
+rpm -q zram-generator &>/dev/null && check_pass "zram-generator installed" || check_fail "zram-generator NOT installed"
+
+ZRAM_CONF="/usr/lib/systemd/zram-generator.conf.d/querencia.conf"
+if [ -f "$ZRAM_CONF" ]; then
+    check_pass "$ZRAM_CONF exists"
+    if grep -q "zram-size = ram / 2" "$ZRAM_CONF"; then
+        check_pass "ZRAM size set to 50% of RAM"
+    else
+        check_fail "ZRAM size NOT set to 50% of RAM"
+    fi
+    if grep -q "compression-algorithm = zstd" "$ZRAM_CONF"; then
+        check_pass "ZRAM compression set to zstd"
+    else
+        check_fail "ZRAM compression NOT set to zstd"
+    fi
+else
+    check_fail "$ZRAM_CONF MISSING"
+fi
 
 echo ""
 

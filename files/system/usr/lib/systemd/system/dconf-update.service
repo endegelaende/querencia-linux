@@ -3,6 +3,7 @@ Description=Regenerate dconf database on boot
 Documentation=https://github.com/coreos/rpm-ostree/issues/1944
 # Ensures dconf defaults baked into the image are always applied,
 # even after image updates that change /etc/dconf/db/local.d/
+Before=display-manager.service
 
 [Service]
 Type=oneshot

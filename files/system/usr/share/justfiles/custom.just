@@ -710,14 +710,14 @@ logs-this-boot:
     @echo "Logs from current boot session:"
     @echo "(Use arrow keys to scroll, q to quit)"
     @echo ""
-    journalctl -b 0 --no-pager | less
+    journalctl -b 0
 
 # Show all system logs from the previous boot
 logs-last-boot:
     @echo "Logs from previous boot session:"
     @echo "(Use arrow keys to scroll, q to quit)"
     @echo ""
-    journalctl -b -1 --no-pager | less
+    journalctl -b -1
 
 # Show only errors from the current boot
 logs-errors:
