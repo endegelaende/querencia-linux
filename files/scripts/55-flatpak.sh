@@ -21,4 +21,29 @@ Icon=https://dl.flathub.org/repo/logo.svg
 GPGKey=mQINBFlD2sABEADsiUZUOYBg1UdDaWkEdJYkTSZD68zjBgcr1gaGORy6ZFjoE4BBs4PO1fjMFh5omEFPkgCLEKNyMz9B9MJfk3KMHHRkGMKjFNJGEPKbNfMfjGjSPTGOSMmMBJhBEF28JZt6NVpRFKVEDjhpOAkHdMmfVOED+ekY0Ql1IEKnEoMBf5Sf+djJCMGVaYI6sRTl9JnpOQIap1JuPrt67LMd/lXQKGB04UPmMcJpmcY9bPBR3mutE8n9fLa3is1XKlqnKHOAl0qdDPMTPLg1zCP55LMJbJU52tVcMPxvOoEOF1fbnNpfCU/FDcCfOBuasNrRrMEcqp4IJJVKbUMB6GCdTWHlXkraY/t8GXUNH1VDQdMdq0Mz1N14XoYMF5Id64kidsufVTMoyOpfvMdBjKAmhaskTNolEi1S00aizpbJH3cz0mnMqaBeJB5FLVqNclJMEBnWbTxMjJG59+Wf4SBSlobj5+C0V8BVPK4ehkTMj0/DkxB/lRDjGcp9m/wKIujKQG8ai5GsWn21eUEjoYdBMqhHsJ3lbq2UA3LFOgiTbJYNnBI23DWCzMxa4/IOjH4iIkHmKXBlsHIGsSC/E5JB7HIYlRaH/qTOzK0lr1JG5jTE2VXJUaYxqGpo0JVtGUCLMo8GqIg7cRSeEDl9e/YrYBxDB4GYmz7dI+a71wARAQABtDxGbGF0aHViIFJlcG8gU2lnbmluZyBLZXkgPGZsYXRodWJAZmxhdGh1Yi5vcmc+iQJUBBMBCAA+FiEEblwF2XnHba+TwIE1QYTdTZB6fK4FAllD2sACGwMFCRLMAwAFCwkIBwIGFQoJCAsCBBYCAwECHgECF4AACgkQQYTdTZB6fK7YYQ/6AkW+jyB4vMBgClVkMQazmBJEMML1uKig+IHH0fUBDOIFP5MAoRgPGKWMaaFMVv9s5ECME5HLYwBiWx2GBnFMw2J1mVjLF7sv0ERRVL1JDMRKGmKFfhTO+Uoixkz/QMMQ3NhpxJSLWkqpiaoRBCAn1fEdETGaKBx9JEgT2XfCCb4ZJfRw0RExYqnFjfM4XrZ/TXCaFzGnb5U3LL4MfHjdUZt0r8V+dCVJZ/UQnbRU7g6IuY0MIpCpMJ9nHlau2C5Y4A9mM56yJRLDqPyrVZomMaDXlJBj+x6QkXBz0NOHM8bm1mZv2IjTBME2Y20GM/jYBmchU2HHQKZ3I8RPnElQ7E85QVzRdJhOHVJCH1Ck5SIBLyXMgOcPG/BGdauuEENL3B8PwkA4a8eCPjYrF1gRMj2tHFQqaUbLokAMMabxQNgnhPVDJUS/bQfIjH/68M0PZCzGsCF0wSIgN4XAwVQw8A07igKqBswTLFYzBfT1kOPQO23ep0r/7EHuCH6vJgfFnL7gMvTlScF+3VaDE+9XoSMIUiVAk7FVgH/0g8KQzMA+Q7e2YkKXuG38r34xVbsVQ/hXZLTyJIKV+2nYqMDE0B0QPR2UV/yEV33GYQhsbgqfSgpi6UvFUMgNgHOfIpVLkuP9RGKW+grNh6fRMmGfdI/avfRnFepkQ=
 REPO
 
+# ---- Flatpak system repo initialization (bootc/ostree clears /var) -----------
+# Without /var/lib/flatpak/repo, Warehouse and other Flatpak tools fail with:
+#   "opening repo: opendir(/var/lib/flatpak/repo): No such file or directory"
+# A simple mkdir is not enough — Flatpak needs the full repo structure
+# (config, objects, refs, etc.). Running "flatpak remotes --system" triggers
+# automatic initialization of the repo. This oneshot service runs early at boot.
+mkdir -p /usr/lib/systemd/system
+cat > /usr/lib/systemd/system/flatpak-init-repo.service <<'UNIT'
+[Unit]
+Description=Initialize Flatpak system repo (bootc/ostree)
+DefaultDependencies=no
+ConditionPathExists=!/var/lib/flatpak/repo
+After=local-fs.target
+Before=multi-user.target graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flatpak remotes --system
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl enable flatpak-init-repo.service 2>/dev/null || true
+
 echo "Flatpak installed. Flathub remote configured via static config."

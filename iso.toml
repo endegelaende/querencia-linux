@@ -15,8 +15,20 @@ bootloader --append="quiet splash"
 # Do NOT preset partitioning -- let user choose
 # (Anaconda will prompt for disk selection and partitioning)
 
-# No lang/keyboard/timezone directives -- let the user choose interactively
-# via the Anaconda Localization and Timezone modules enabled below.
+# ---- No hardcoded lang/keyboard/timezone ------------------------------------
+# All three are left out so Anaconda shows them as unconfigured spokes.
+# The user MUST pick language, keyboard layout and timezone interactively.
+# The Localization and Timezone modules are enabled below to ensure
+# the corresponding spokes appear in the installer UI.
+#
+# Why no "lang" or "keyboard" directive:
+#   - "lang en_US.UTF-8" would preset the welcome screen to English
+#   - "keyboard --xlayouts='us'" would show only ONE entry in the
+#     keyboard spoke instead of the full layout list
+#   - Without either, Anaconda treats them as unconfigured and forces
+#     the user to make an active choice (orange warning icon)
+#
+# Timezone: also left out so the user picks their own.
 
 # No %post needed -- everything is already configured in the bootc image:
 #   - Services enabled: lightdm, NetworkManager, bluetooth, fstrim.timer, etc.
@@ -33,6 +45,13 @@ enable = [
   "org.fedoraproject.Anaconda.Modules.Localization",
   "org.fedoraproject.Anaconda.Modules.Timezone",
 ]
+
+# NOTE: inst.resolution and inst.graphical are Anaconda boot parameters that would
+# need to be in the ISO's GRUB config. bootc-image-builder does not expose a way to
+# set these. The "graphical" keyword in the kickstart contents above is sufficient
+# to ensure graphical mode. Anaconda picks a usable resolution automatically.
+# A [customizations.kernel] block here would set kernel args for the *installed*
+# system, not the installer — so inst.* params would be ignored there anyway.
 
 [customizations.iso]
 volume_id = "QuerenciaLinux"
