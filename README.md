@@ -55,7 +55,7 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 | Component | Details |
 |---|---|
 | MATE Desktop | Full desktop with BlueMenta theme, Noto fonts, Dracula terminal |
-| LightDM | GTK greeter (slick-greeter as fallback), no guest login |
+| LightDM | GTK greeter, no guest login |
 | PipeWire | Audio with PulseAudio compat + WirePlumber + pavucontrol |
 | Plymouth | Custom boot splash with Querencia logo |
 | ZRAM | Compressed RAM swap (50% of RAM, zstd, auto at boot) |
@@ -229,6 +229,8 @@ ujust maintenance         # full maintenance (update + clean)
 | `ujust memory` | Show memory usage |
 | `ujust services` | Show running services |
 | `ujust logs` | Show current boot logs |
+| `ujust bios` | Reboot into BIOS/UEFI firmware setup |
+| `ujust bios-info` | Show BIOS/UEFI information |
 | `ujust trim` | Run SSD TRIM |
 | `ujust clean` | Clean up caches and logs |
 | `ujust maintenance` | Full maintenance (update + clean) |
@@ -236,6 +238,7 @@ ujust maintenance         # full maintenance (update + clean)
 | `ujust update-now` | Trigger auto-update manually |
 | `ujust update-disable` | Disable automatic updates |
 | `ujust update-enable` | Enable automatic updates |
+| `ujust device-info` | Collect system diagnostics and upload to pastebin |
 </details>
 
 <details>
@@ -250,6 +253,15 @@ ujust maintenance         # full maintenance (update + clean)
 | `ujust gpu-powersave` | Set GPU to power saving mode |
 | `ujust gpu-auto` | Set GPU to automatic mode |
 | `ujust gpu-test` | Run Vulkan test (vkcube) |
+</details>
+
+<details>
+<summary><b>Multimedia</b></summary>
+
+| Command | Description |
+|---|---|
+| `ujust codec-check` | Check codec status (which formats are supported) |
+| `ujust codec-test` | Play a test video (Big Buck Bunny) |
 </details>
 
 <details>
@@ -284,7 +296,15 @@ ujust maintenance         # full maintenance (update + clean)
 | `ujust mamba-install-tools` | Install CLI tools (ripgrep, bat, eza, fzf, starship, etc.) |
 | `ujust mamba-create [name]` | Create empty environment |
 | `ujust mamba-install [packages]` | Install packages into base environment |
+| `ujust mamba-packages` | List packages in base environment |
 | `ujust mamba-list` | List environments |
+| `ujust mamba-update` | Update all packages in base environment |
+| `ujust mamba-backup [name]` | Export environment to YAML (backup) |
+| `ujust mamba-restore [file]` | Restore environment from YAML file |
+| `ujust mamba-backups` | Show all backups |
+| `ujust mamba-clean` | Clean micromamba cache |
+| `ujust mamba-python [version]` | Create a Python development environment |
+| `ujust mamba-node [version]` | Create a Node.js development environment |
 </details>
 
 <details>
@@ -375,7 +395,7 @@ System-wide defaults that users can override individually:
 
 ### Display Manager
 
-**LightDM** with **GTK greeter** (slick-greeter installed as fallback). Guest login disabled, user switching allowed. Runtime directories created via systemd-tmpfiles (required for bootc where `/var` is recreated on each boot).
+**LightDM** with **GTK greeter**. Guest login disabled, user switching allowed. Runtime directories created via systemd-tmpfiles (required for bootc where `/var` is recreated on each boot).
 
 ---
 
@@ -478,7 +498,7 @@ Any GPU supported by the open-source `amdgpu` driver works out of the box — Me
 <details>
 <summary><b>Where do the MATE packages come from?</b></summary>
 
-From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — 128 packages, all under our control. 111 are built directly from Fedora distgit, 6 from our own GitHub forks with minimal EL10 patches, and 11 are stable/frozen upload SRPMs. See [`copr-fork/`](copr-fork/) for details.
+From our own COPR: [winonaoctober/MateDesktop-EL10](https://copr.fedorainfracloud.org/coprs/winonaoctober/MateDesktop-EL10/) — 128 packages, all under our control. 111 are built directly from Fedora distgit, 5 from our own GitHub forks with minimal EL10 patches, and 11 are stable/frozen upload SRPMs. See [`copr-fork/`](copr-fork/) for details.
 </details>
 
 <details>
