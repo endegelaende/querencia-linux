@@ -76,8 +76,7 @@ You have **4 virtual workspaces** out of the box:
 |---|---|
 | `Print` | Capture full screen (saved to file) |
 | `Alt+Print` | Capture active window (saved to file) |
-
-> **Tip:** For area selection screenshots, run `mate-screenshot --area` from a terminal or bind it to a custom shortcut. The MATE keybinding system does not support `Shift+Print` for area capture.
+| `Shift+Print` | Select an area to capture (saved to file) |
 
 ### Night Mode
 
