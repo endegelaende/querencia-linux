@@ -6,10 +6,18 @@
   <img src="https://img.shields.io/badge/AlmaLinux-10-blue?logo=almalinux" alt="AlmaLinux">
   <img src="https://img.shields.io/badge/Desktop-MATE-green?logo=mate" alt="MATE">
   <img src="https://img.shields.io/badge/GPU-AMD%20(Mesa%20/%20RADV)-red?logo=amd" alt="AMD">
+  <img src="https://img.shields.io/badge/GPU-NVIDIA%20(Open%20KMod)-green?logo=nvidia" alt="NVIDIA">
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
 </p>
 
 A **bootable OCI container image** that works as a complete Linux desktop — atomic, immutable, with automatic rollback. Built on [AlmaLinux 10](https://almalinux.org/) with [MATE Desktop](https://mate-desktop.org/) using the official [AlmaLinux Atomic Respin Template](https://github.com/AlmaLinux/atomic-respin-template).
+
+Available in **two GPU variants** — same repo, same Dockerfile, two images:
+
+| Variant | Image | GPU Stack |
+|---|---|---|
+| **AMD** (default) | `ghcr.io/endegelaende/querencia-linux:latest` | Mesa + Vulkan (RADV) + VA-API |
+| **NVIDIA** | `ghcr.io/endegelaende/querencia-linux-nvidia:latest` | AlmaLinux native `nvidia-open-kmod` (Secure Boot) |
 
 - **AlmaLinux 10** — RHEL-compatible, long-term support
 - **MATE Desktop** — classic, lightweight, X11-based
@@ -18,6 +26,7 @@ A **bootable OCI container image** that works as a complete Linux desktop — at
 - **Flatpak** — sandboxed GUI apps from Flathub (Warehouse as app store)
 - **Distrobox** — mutable containers for development
 - **AMD GPU** — Mesa + Vulkan (RADV) + VA-API, works out of the box
+- **NVIDIA GPU** — AlmaLinux native drivers (Secure Boot signed, CUDA included)
 - **Multimedia** — full codec support via RPM Fusion
 
 The root filesystem is **read-only**. Install software with Micromamba (CLI tools, languages, libraries), Flatpak (GUI apps), or Distrobox (full dev environments) — no root required.
@@ -36,7 +45,8 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 ├─────────────────────────────────────────────────────┤
 │  MATE Desktop + LightDM + PipeWire                   │
 ├─────────────────────────────────────────────────────┤
-│  Mesa (OpenGL / Vulkan RADV) + VA-API + amdgpu       │
+│  AMD: Mesa + RADV + VA-API    │  NVIDIA: nvidia-open │
+│       + amdgpu driver         │  + switcheroo-control│
 ├─────────────────────────────────────────────────────┤
 │  AlmaLinux 10 bootc (immutable, atomic)              │
 ├─────────────────────────────────────────────────────┤
@@ -44,7 +54,7 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 └─────────────────────────────────────────────────────┘
 ```
 
-**Update flow:** GitHub Push/Schedule → GitHub Actions → Build Image → Push to GHCR → `bootc upgrade` on your PC → Reboot (old image kept for rollback)
+**Update flow:** GitHub Push/Schedule → GitHub Actions → Build both images (AMD + NVIDIA) → Push to GHCR → `bootc upgrade` on your PC → Reboot (old image kept for rollback)
 
 ---
 
@@ -60,18 +70,28 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 | Plymouth | Custom boot splash with Querencia logo |
 | ZRAM | Compressed RAM swap (50% of RAM, zstd, auto at boot) |
 | Firefox | Pre-installed web browser |
-| Redshift | Night mode / blue light filter (system tray) |
+| Redshift | Night mode / blue light filter with auto-geolocation (BeaconDB) |
+| fastfetch | Modern system info display (neofetch replacement) |
+| `open` alias | macOS-like `open` command (wraps `xdg-open`) |
 
 ### Hardware Support
 
 | Component | Details |
 |---|---|
 | AMD GPU | Mesa + Vulkan (RADV) + VA-API + VDPAU + linux-firmware |
+| AMD Legacy GPU | HD 7000 / R7 / R9 series on modern `amdgpu` driver (via modprobe) |
+| NVIDIA GPU | AlmaLinux native `nvidia-open-kmod` (Secure Boot signed) + CUDA |
+| Hybrid GPU | `switcheroo-control` for Intel/AMD iGPU + NVIDIA dGPU laptops |
 | Printing | CUPS (socket-activated) + Gutenprint + Foomatic drivers |
 | Scanning | SANE backends for USB/network scanners |
 | Bluetooth | BlueZ + Blueman manager |
 | WiFi | NetworkManager + WiFi + NM applet |
 | VPN | OpenVPN + WireGuard (with NM plugins) |
+| iOS Devices | `ifuse` + `libimobiledevice` — mount iPhones/iPads |
+| USB-C Docks | Realtek USB Ethernet udev rules (Lenovo, TP-Link, Samsung) |
+| Apple SuperDrive | Auto-init udev rule (works when plugged in) |
+| Monitors | `ddcutil` — control brightness/settings via DDC/CI |
+| Power | `powertop` — power analysis and tuning for laptops |
 
 ### Software Management
 
@@ -90,6 +110,9 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 | SELinux | Enforcing + setroubleshoot (graphical notifications) |
 | PolicyKit | mate-polkit agent, wheel group can manage Flatpak |
 | Auto-Update | bootc + Flatpak updates every 6 hours (desktop notification) |
+| Repo Lockdown | All third-party repos disabled after build + validation gate |
+| Build Tests | Automated verification of packages, services, files, GPU config |
+| dconf Refresh | Regenerated on every boot (picks up image updates automatically) |
 | Locale | 12 language packs (en, de, fr, es, it, pt, nl, pl, ru, ja, zh, ko) |
 
 ---
@@ -99,13 +122,22 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 ### Pull the image
 
 ```bash
+# AMD (default)
 podman pull ghcr.io/endegelaende/querencia-linux:latest
+
+# NVIDIA
+podman pull ghcr.io/endegelaende/querencia-linux-nvidia:latest
 ```
 
 ### Rebase from an existing bootc / Atomic system
 
 ```bash
+# AMD (default)
 sudo bootc switch ghcr.io/endegelaende/querencia-linux:latest
+sudo reboot
+
+# NVIDIA
+sudo bootc switch ghcr.io/endegelaende/querencia-linux-nvidia:latest
 sudo reboot
 ```
 
@@ -333,18 +365,19 @@ ujust maintenance         # full maintenance (update + clean)
 
 ## Build
 
-Requires Podman on Linux.
+Requires Podman on Linux. Both GPU variants are built from the same Dockerfile using the `VARIANT` build argument.
 
 | Target | Description |
 |---|---|
-| `make image` | Build the OCI container image |
+| `make image` | Build AMD image (default) |
+| `make image VARIANT=nvidia` | Build NVIDIA image |
 | `make iso` | Build a bootable ISO installer |
 | `make qcow2` | Build a QCOW2 VM image |
 | `make run-qemu-iso` | Boot ISO in QEMU |
 | `make run-qemu-qcow` | Boot QCOW2 in QEMU |
 | `make clean` | Remove build output |
 
-CI runs automatically via GitHub Actions (push to `main`, weekly schedule, or manual trigger) using [AlmaLinux atomic-ci](https://github.com/AlmaLinux/atomic-ci).
+CI runs automatically via GitHub Actions (push to `main`, weekly schedule, or manual trigger) using [AlmaLinux atomic-ci](https://github.com/AlmaLinux/atomic-ci). **Both AMD and NVIDIA variants are built in parallel** — a failure in one does not block the other. ISO builds trigger automatically after successful image builds.
 
 ---
 
@@ -405,7 +438,7 @@ System-wide defaults that users can override individually:
 querencia-linux/
 ├── .github/
 │   ├── actions/              ← Reusable action configs
-│   └── workflows/            ← CI pipeline: build.yml + build-iso.yml
+│   └── workflows/            ← CI: build.yml (images) + build-iso.yml (ISOs)
 ├── assets/
 │   ├── querencia-logo.svg    ← Project logo (used in Plymouth + README)
 │   └── querencia{1,2,3}.png  ← Pre-rendered Plymouth boot splash (3 sizes)
@@ -424,19 +457,22 @@ querencia-linux/
 │   │   ├── 10-repos.sh       ← EPEL, CRB, Rocky Devel, winonaoctober COPR, RPM Fusion
 │   │   ├── 20-mate-desktop.sh ← MATE Desktop + LightDM + Xorg + Fonts + 12 Locales
 │   │   ├── 25-audio.sh       ← PipeWire + WirePlumber
-│   │   ├── 30-amd-gpu.sh     ← Mesa, Vulkan (RADV), VA-API, Firmware
+│   │   ├── 30-gpu.sh         ← GPU drivers (AMD: Mesa+RADV | NVIDIA: nvidia-open-kmod)
 │   │   ├── 35-multimedia.sh  ← GStreamer + FFmpeg codecs (RPM Fusion)
 │   │   ├── 40-network.sh     ← NetworkManager, WiFi, OpenVPN, WireGuard, Bluetooth, Firewall
-│   │   ├── 45-system-tools.sh ← Firefox, htop, nano, git, SELinux troubleshooter, Redshift
+│   │   ├── 45-system-tools.sh ← Firefox, fastfetch, iOS, ddcutil, powertop, Redshift
 │   │   ├── 46-printing.sh    ← CUPS + SANE scanner backends
 │   │   ├── 50-micromamba.sh   ← Micromamba binary to /usr/bin
-│   │   ├── 55-flatpak.sh     ← Flatpak + Flathub remote
+│   │   ├── 55-flatpak.sh     ← Flatpak + Flathub remote + repo init service
 │   │   ├── 60-distrobox.sh   ← Distrobox + Podman
 │   │   ├── 71-zram.sh        ← ZRAM compressed swap (50% RAM, zstd)
 │   │   ├── 72-plymouth.sh    ← Plymouth boot splash with Querencia logo
 │   │   ├── 75-post-install.sh ← First-boot service, auto-update, ujust, sysctl, polkit
-│   │   ├── 80-branding.sh    ← os-release, /etc/issue
-│   │   ├── 85-amd-tuning.sh  ← amdgpu module + ppfeaturemask
+│   │   ├── 80-branding.sh    ← os-release, /etc/issue, image-info.json
+│   │   ├── 85-gpu-tuning.sh  ← GPU kernel config (AMD: ppfeaturemask | NVIDIA: kargs)
+│   │   ├── 87-disable-repos.sh ← Disable third-party repos after install (security)
+│   │   ├── 88-validate-repos.sh ← Security gate: fail build if repos still enabled
+│   │   ├── 89-tests.sh       ← Build-time tests (packages, services, files, GPU)
 │   │   ├── 90-signing.sh     ← Cosign key setup (template — do not modify)
 │   │   ├── 91-image-info.sh  ← VARIANT_ID in os-release (template — do not modify)
 │   │   ├── build.sh          ← Build orchestrator (template — do not modify)
@@ -444,16 +480,20 @@ querencia-linux/
 │   └── system/               ← Files overlaid onto / during build
 │       ├── etc/dconf/        ← MATE defaults (BlueMenta, Noto, screenshot keys)
 │       ├── etc/fonts/        ← Fontconfig (subpixel rendering, Noto fallback)
+│       ├── etc/geoclue/      ← BeaconDB WiFi geolocation (privacy-friendly)
 │       ├── etc/lightdm/      ← LightDM + GTK greeter config
-│       ├── etc/profile.d/    ← Micromamba shell integration
+│       ├── etc/profile.d/    ← Micromamba shell integration + open alias
 │       ├── etc/yum.repos.d/  ← winonaoctober MATE COPR + Rocky Devel repos
+│       ├── usr/lib/modprobe.d/ ← AMD legacy GPU support (amd-legacy.conf)
+│       ├── usr/lib/systemd/  ← dconf-update.service (regenerate on boot)
+│       ├── usr/lib/udev/     ← Realtek USB Ethernet + Apple SuperDrive rules
 │       └── usr/share/justfiles/ ← ujust recipes
 ├── .gitattributes            ← Enforce LF line endings
-├── Dockerfile                ← Multi-stage build (AlmaLinux bootc:10 base)
+├── Dockerfile                ← Multi-stage build (bootc:10, VARIANT arg, DNF cache mount)
 ├── LICENSE                   ← MIT license
-├── Makefile                  ← Local build, ISO, QCOW2, QEMU targets
+├── Makefile                  ← Local build, ISO, QCOW2, QEMU targets (VARIANT= support)
 ├── almalinux-bootc.pub       ← Cosign public key (template — do not modify)
-├── iso.toml                  ← ISO installer config (interactive Anaconda)
+├── iso.toml                  ← ISO installer config (interactive Anaconda, no l10n presets)
 └── README.md                 ← This file
 ```
 
