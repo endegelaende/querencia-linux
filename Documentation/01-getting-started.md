@@ -24,7 +24,7 @@ Software you install goes through three channels, all of which live outside the 
 
 ## First Login
 
-When you log in for the first time, a one-time setup runs automatically in the background. You'll see a welcome notification when it's done. Here's what happens:
+When you log in for the first time, a one-time setup runs automatically. Once it completes, the **Welcome Center** opens to guide you through your new system. Here's what the setup does:
 
 1. **XDG directories created** — `Documents`, `Downloads`, `Pictures`, `Music`, `Videos`, and others are set up in your home folder.
 2. **Caja bookmarks configured** — the file manager sidebar gets shortcuts to Documents, Downloads, Pictures, Music, and Videos.
@@ -32,9 +32,25 @@ When you log in for the first time, a one-time setup runs automatically in the b
 4. **Flathub remote added** — the Flathub app repository is enabled for your user, giving you access to thousands of apps.
 5. **Warehouse installed** — [Warehouse](https://flathub.org/apps/io.github.flattool.Warehouse) (a graphical Flatpak store) is installed automatically. Find it in your Applications menu.
 6. **Micromamba `base` environment created** — the user-space package manager is ready immediately. Just open a terminal and run `micromamba install <package>`.
-7. **Welcome notification shown** — a desktop notification confirms everything is ready.
+7. **Welcome Center shown** — once the setup steps above are finished, the [Welcome Center](#welcome-center) opens automatically, guiding you through first steps, app installation, and system info. If the Welcome Center is unavailable, a desktop notification is shown as fallback.
 
-This only runs once. A marker file (`~/.config/querencia-setup-done`) prevents it from running again on subsequent logins.
+This setup only runs once. A marker file (`~/.config/querencia-setup-done`) prevents it from running again on subsequent logins.
+
+## Welcome Center
+
+The Welcome Center is a guided introduction to Querencia Linux. It opens automatically on first login and is available anytime from the Applications menu: **System → Welcome to Querencia Linux**.
+
+The Welcome Center is **fully localized in 12 languages** — it automatically matches the language you chose during installation (English, Deutsch, Français, Español, Italiano, Português, Nederlands, Polski, Русский, 日本語, 中文, 한국어).
+
+It includes five pages:
+
+- **Welcome** — version info and a quick "Let's get started!" entry point
+- **First Steps** — action cards to customize your desktop (Appearance, App Store, Caja File Manager, MATE Control Center, Firewall, Updates)
+- **Installing Software** — how to install apps via Flatpak, Micromamba, and Distrobox on an atomic system
+- **System Info** — hardware and software details, copy-to-clipboard, quick ujust commands
+- **Help & Links** — links to the website, GitHub, AlmaLinux Wiki, and bug reporting
+
+To stop it from appearing at login, uncheck **"Show at startup"** at the bottom of the window. You can always reopen it from the menu.
 
 ## Your Desktop
 
@@ -58,11 +74,10 @@ You have **4 virtual workspaces** out of the box:
 
 | Shortcut | Action |
 |---|---|
-| `Print` | Capture full screen |
-| `Alt+Print` | Capture active window |
-| `Shift+Print` | Select an area to capture |
+| `Print` | Capture full screen (saved to file) |
+| `Alt+Print` | Capture active window (saved to file) |
 
-All three also work with `Ctrl+` variants to copy to clipboard instead of saving to a file.
+> **Tip:** For area selection screenshots, run `mate-screenshot --area` from a terminal or bind it to a custom shortcut. The MATE keybinding system does not support `Shift+Print` for area capture.
 
 ### Night Mode
 
@@ -115,7 +130,7 @@ A curated set of recommended apps can be installed in one shot:
 ujust install-essentials
 ```
 
-This installs Firefox, Thunderbird, LibreOffice, Calculator, Evince (PDF viewer), Flatseal (permission manager), Celluloid (video player), and Simple Scan.
+This installs Thunderbird, LibreOffice, Calculator, Evince (PDF viewer), Flatseal (permission manager), Celluloid (video player), and Simple Scan. (Firefox is already pre-installed as a system RPM.)
 
 ### Micromamba (CLI Tools & Dev Environments)
 

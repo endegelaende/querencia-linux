@@ -146,12 +146,17 @@ ujust bios-info           # BIOS/UEFI information
 ujust device-info         # full system diagnostics (useful for troubleshooting)
 ```
 
-### GPU info (AMD variant)
+### GPU info
+
+These commands auto-detect whether you have an AMD or NVIDIA GPU:
 
 ```
-ujust gpu-info            # driver, Vulkan, VA-API status
-ujust gpu-monitor         # live GPU monitoring (temp, clock, VRAM, power)
-ujust gpu-sensors         # one-shot sensor readings
+ujust gpu-info            # driver, Vulkan, VA-API / nvidia-smi status
+ujust gpu-monitor         # live GPU monitoring (AMD sysfs or nvidia-smi)
+ujust gpu-sensors         # one-shot sensor readings (temp, VRAM, power, clocks)
+ujust gpu-performance     # high performance mode
+ujust gpu-powersave       # power saving mode
+ujust gpu-auto            # automatic / reset to defaults
 ```
 
 ---

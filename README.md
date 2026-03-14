@@ -203,7 +203,7 @@ flatpak install flathub com.valvesoftware.Steam
 ujust install-essentials    # recommended apps bundle
 ```
 
-The `install-essentials` recipe installs: Firefox, Thunderbird, LibreOffice, Calculator, Evince, Flatseal, Celluloid, Simple Scan.
+The `install-essentials` recipe installs: Thunderbird, LibreOffice, Calculator, Evince, Flatseal, Celluloid, Simple Scan. Firefox is already pre-installed.
 
 ### CLI Tools & Languages (Micromamba)
 
@@ -302,7 +302,7 @@ ujust maintenance         # full maintenance (update + clean)
 | Command | Description |
 |---|---|
 | `ujust setup-flatpak` | Set up Flathub |
-| `ujust install-essentials` | Install recommended apps (Firefox, Thunderbird, LibreOffice, Flatseal, Simple Scan, etc.) |
+| `ujust install-essentials` | Install recommended apps (Thunderbird, LibreOffice, Flatseal, Simple Scan, etc.) |
 | `ujust open-store` | Open Warehouse (Flatpak Store) |
 | `ujust clean-flatpak` | Remove unused runtimes |
 </details>

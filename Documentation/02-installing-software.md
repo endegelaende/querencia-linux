@@ -37,8 +37,9 @@ A curated bundle of recommended apps is available via:
 ujust install-essentials
 ```
 
-This installs: Firefox, Thunderbird, LibreOffice, Calculator, Evince (PDF viewer),
+This installs: Thunderbird, LibreOffice, Calculator, Evince (PDF viewer),
 Flatseal, Celluloid (video player), and Simple Scan.
+Firefox is already pre-installed as an RPM for best system integration.
 
 ### Common commands
 

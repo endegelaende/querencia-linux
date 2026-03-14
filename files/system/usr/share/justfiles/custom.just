@@ -63,7 +63,6 @@ setup-flatpak:
 # Install recommended Flatpak apps
 install-essentials:
     @echo "Installing recommended Flatpak apps..."
-    flatpak install -y flathub org.mozilla.firefox
     flatpak install -y flathub org.mozilla.Thunderbird
     flatpak install -y flathub org.libreoffice.LibreOffice
     flatpak install -y flathub org.gnome.Calculator
@@ -120,68 +119,161 @@ distrobox-upgrade:
     @echo "Done."
 
 # =============================================================================
-# AMD GPU (RX 6600 / RDNA 2)
+# GPU (auto-detects AMD or NVIDIA)
 # =============================================================================
 
-# Show AMD GPU info (driver, Vulkan, VA-API)
+# Show GPU info (auto-detects AMD or NVIDIA)
 gpu-info:
-    @echo "AMD GPU Information:"
-    @echo ""
-    @echo "-- Kernel driver --"
-    lsmod | grep -i amdgpu
-    @echo ""
-    @echo "-- GPU hardware --"
-    lspci -k | grep -A3 -i vga
-    @echo ""
-    @echo "-- Mesa / OpenGL --"
-    glxinfo | grep -i "opengl renderer\|opengl version" 2>/dev/null || echo "(glxinfo not available -- install mesa-demos)"
-    @echo ""
-    @echo "-- Vulkan --"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== GPU Information ==="
+    echo ""
+    echo "-- GPU hardware --"
+    lspci -k 2>/dev/null | grep -A3 -i 'vga\|3d controller' || echo "(lspci not available)"
+    echo ""
+    if lsmod | grep -q nvidia 2>/dev/null; then
+        echo "-- NVIDIA Driver --"
+        nvidia-smi 2>/dev/null || echo "(nvidia-smi not available)"
+        echo ""
+        echo "-- Loaded modules --"
+        lsmod | grep -i nvidia || true
+        echo ""
+        echo "-- Kernel args --"
+        grep -oE '(modprobe\.blacklist=nouveau|nvidia-drm\.modeset=[0-9]+|rd\.driver\.blacklist=nouveau)' /proc/cmdline 2>/dev/null || echo "(none)"
+        echo ""
+        echo "-- nouveau status --"
+        if lsmod | grep -q nouveau 2>/dev/null; then
+            echo "WARNING: nouveau is loaded (should be blacklisted)"
+        else
+            echo "nouveau is not loaded (correct)"
+        fi
+    elif lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "-- AMD Kernel driver --"
+        lsmod | grep -i amdgpu
+        echo ""
+        echo "-- Mesa / OpenGL --"
+        glxinfo 2>/dev/null | grep -i "opengl renderer\|opengl version" || echo "(glxinfo not available -- install mesa-demos)"
+        echo ""
+        echo "-- VA-API (hardware video) --"
+        vainfo 2>/dev/null || echo "(vainfo not available)"
+    else
+        echo "-- Kernel driver --"
+        echo "No AMD (amdgpu) or NVIDIA driver detected."
+        echo "Loaded GPU-related modules:"
+        lsmod | grep -iE 'gpu|drm|video|vga|radeon|nouveau|i915|xe' 2>/dev/null || echo "(none)"
+    fi
+    echo ""
+    echo "-- Vulkan --"
     vulkaninfo --summary 2>/dev/null || echo "(vulkaninfo not available)"
-    @echo ""
-    @echo "-- VA-API (hardware video) --"
-    vainfo 2>/dev/null || echo "(vainfo not available)"
 
-# Live AMD GPU monitoring (temperature, clock, utilization, VRAM)
+# Live GPU monitoring (auto-detects AMD or NVIDIA)
 gpu-monitor:
-    @echo "AMD GPU Monitor (Ctrl+C to exit):"
-    @echo ""
-    watch -n 1 'echo "-- GPU Busy --" && cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null && echo "%" && echo "" && echo "-- Temperature --" && cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | awk "{printf \"%.1f C\n\", \$1/1000}" && echo "" && echo "-- VRAM --" && echo "Used: $(cat /sys/class/drm/card*/device/mem_info_vram_used 2>/dev/null | awk "{printf \"%.0f MB\", \$1/1048576}") / Total: $(cat /sys/class/drm/card*/device/mem_info_vram_total 2>/dev/null | awk "{printf \"%.0f MB\", \$1/1048576}")" && echo "" && echo "-- Clock --" && cat /sys/class/drm/card*/device/pp_dpm_sclk 2>/dev/null | grep "\*" && echo "" && echo "-- Power --" && cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | awk "{printf \"%.1f W\n\", \$1/1000000}"'
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v nvidia-smi &>/dev/null && nvidia-smi &>/dev/null; then
+        echo "NVIDIA GPU Monitor (Ctrl+C to exit):"
+        echo ""
+        watch -n 1 'nvidia-smi'
+    elif [ -d /sys/class/drm/card0/device ] && lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "AMD GPU Monitor (Ctrl+C to exit):"
+        echo ""
+        watch -n 1 'echo "-- GPU Busy --" && cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null && echo "%" && echo "" && echo "-- Temperature --" && cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | awk "{printf \"%.1f C\n\", \$1/1000}" && echo "" && echo "-- VRAM --" && echo "Used: $(cat /sys/class/drm/card*/device/mem_info_vram_used 2>/dev/null | awk "{printf \"%.0f MB\", \$1/1048576}") / Total: $(cat /sys/class/drm/card*/device/mem_info_vram_total 2>/dev/null | awk "{printf \"%.0f MB\", \$1/1048576}")" && echo "" && echo "-- Clock --" && cat /sys/class/drm/card*/device/pp_dpm_sclk 2>/dev/null | grep "\*" && echo "" && echo "-- Power --" && cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | awk "{printf \"%.1f W\n\", \$1/1000000}"'
+    else
+        echo "No supported GPU monitoring available."
+        echo "Try: lspci -k | grep -A3 VGA"
+    fi
 
-# Show AMD GPU sensor readings (one-shot)
+# Show GPU sensor readings (auto-detects AMD or NVIDIA)
 gpu-sensors:
-    @echo "AMD GPU Sensors:"
-    @echo ""
-    @echo "-- Temperature --"
-    @cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | awk '{printf "GPU: %.1f C\n", $$1/1000}' || echo "Not available"
-    @echo ""
-    @echo "-- VRAM Usage --"
-    @echo "Used:  $$(cat /sys/class/drm/card*/device/mem_info_vram_used 2>/dev/null | awk '{printf "%.0f MB", $$1/1048576}')"
-    @echo "Total: $$(cat /sys/class/drm/card*/device/mem_info_vram_total 2>/dev/null | awk '{printf "%.0f MB", $$1/1048576}')"
-    @echo ""
-    @echo "-- Utilization --"
-    @echo "GPU Busy: $$(cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null)%"
-    @echo ""
-    @echo "-- Power --"
-    @cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | awk '{printf "Draw: %.1f W\n", $$1/1000000}' || echo "Not available"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if command -v nvidia-smi &>/dev/null && nvidia-smi &>/dev/null; then
+        echo "NVIDIA GPU Sensors:"
+        echo ""
+        nvidia-smi --query-gpu=name,temperature.gpu,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw,power.limit,fan.speed,clocks.gr,clocks.mem --format=csv,noheader,nounits 2>/dev/null | \
+        while IFS=, read -r name temp gpu_util mem_util mem_used mem_total power power_limit fan clk_gr clk_mem; do
+            echo "  GPU:         $(echo "$name" | xargs)"
+            echo "  Temperature: $(echo "$temp" | xargs) °C"
+            echo "  GPU Util:    $(echo "$gpu_util" | xargs) %"
+            echo "  Mem Util:    $(echo "$mem_util" | xargs) %"
+            echo "  VRAM:        $(echo "$mem_used" | xargs) / $(echo "$mem_total" | xargs) MiB"
+            echo "  Power:       $(echo "$power" | xargs) / $(echo "$power_limit" | xargs) W"
+            echo "  Fan:         $(echo "$fan" | xargs) %"
+            echo "  Clocks:      $(echo "$clk_gr" | xargs) MHz (GPU), $(echo "$clk_mem" | xargs) MHz (Mem)"
+        done || nvidia-smi
+    elif lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "AMD GPU Sensors:"
+        echo ""
+        echo "-- Temperature --"
+        cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | awk '{printf "  GPU: %.1f °C\n", $1/1000}' || echo "  Not available"
+        echo ""
+        echo "-- VRAM Usage --"
+        echo "  Used:  $(cat /sys/class/drm/card*/device/mem_info_vram_used 2>/dev/null | awk '{printf "%.0f MB", $1/1048576}')"
+        echo "  Total: $(cat /sys/class/drm/card*/device/mem_info_vram_total 2>/dev/null | awk '{printf "%.0f MB", $1/1048576}')"
+        echo ""
+        echo "-- Utilization --"
+        echo "  GPU Busy: $(cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null)%"
+        echo ""
+        echo "-- Power --"
+        cat /sys/class/drm/card*/device/hwmon/hwmon*/power1_average 2>/dev/null | awk '{printf "  Draw: %.1f W\n", $1/1000000}' || echo "  Not available"
+    else
+        echo "No supported GPU detected for sensor readings."
+        echo "Try: lspci -k | grep -A3 VGA"
+    fi
 
-# Set GPU power profile to performance
+# Set GPU power profile to performance (AMD only — NVIDIA uses nvidia-smi)
 gpu-performance:
-    @echo "GPU power profile -> Performance"
-    echo "high" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
-    @echo "Performance mode active."
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "AMD GPU power profile -> Performance"
+        echo "high" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
+        echo "Performance mode active."
+    elif command -v nvidia-smi &>/dev/null; then
+        echo "NVIDIA GPU -> Prefer Maximum Performance"
+        sudo nvidia-smi -pm 1 2>/dev/null || true
+        sudo nvidia-smi --power-limit=$(nvidia-smi --query-gpu=power.max_limit --format=csv,noheader,nounits 2>/dev/null | head -1 | xargs) 2>/dev/null || true
+        echo "Set persistence mode ON and power limit to maximum."
+        echo "For per-app control, use: switcherooctl launch <command>"
+    else
+        echo "No supported GPU found for power profile control."
+    fi
 
-# Set GPU power profile to power saving
+# Set GPU power profile to power saving (AMD only — NVIDIA uses nvidia-smi)
 gpu-powersave:
-    @echo "GPU power profile -> Power Save"
-    echo "low" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
-    @echo "Power save mode active."
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "AMD GPU power profile -> Power Save"
+        echo "low" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
+        echo "Power save mode active."
+    elif command -v nvidia-smi &>/dev/null; then
+        echo "NVIDIA GPU -> Power Saving"
+        sudo nvidia-smi -pm 1 2>/dev/null || true
+        sudo nvidia-smi -pl $(nvidia-smi --query-gpu=power.min_limit --format=csv,noheader,nounits 2>/dev/null | head -1 | xargs) 2>/dev/null || true
+        echo "Set power limit to minimum."
+        echo "Note: Clock speeds will reduce under load. Reset with: ujust gpu-auto"
+    else
+        echo "No supported GPU found for power profile control."
+    fi
 
-# Set GPU power profile to automatic
+# Set GPU power profile to automatic (AMD) / reset to defaults (NVIDIA)
 gpu-auto:
-    @echo "GPU power profile -> Auto"
-    echo "auto" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
-    @echo "Auto mode active."
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if lsmod | grep -q amdgpu 2>/dev/null; then
+        echo "AMD GPU power profile -> Auto"
+        echo "auto" | sudo tee /sys/class/drm/card*/device/power_dpm_force_performance_level
+        echo "Auto mode active."
+    elif command -v nvidia-smi &>/dev/null; then
+        echo "NVIDIA GPU -> Reset to defaults"
+        sudo nvidia-smi -pm 0 2>/dev/null || true
+        sudo nvidia-smi -rgc 2>/dev/null || true
+        sudo nvidia-smi -rmc 2>/dev/null || true
+        echo "Persistence mode OFF, clocks reset to default."
+    else
+        echo "No supported GPU found for power profile control."
+    fi
 
 # Run Vulkan test (vkcube)
 gpu-test:

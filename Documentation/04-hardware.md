@@ -40,7 +40,7 @@ ujust gpu-monitor         # live monitoring (Ctrl+C to exit)
 ujust gpu-test            # run Vulkan test (vkcube)
 ```
 
-#### Power profiles (AMD only)
+#### Power profiles (AMD)
 
 ```bash
 ujust gpu-performance     # high performance mode
@@ -70,13 +70,33 @@ The `nouveau` driver is blacklisted at every level (modprobe, initramfs, kernel 
 line) to prevent conflicts. NVIDIA DRM modesetting is enabled for smooth VT switching
 and proper suspend/resume.
 
+#### Check your GPU
+
+The same `ujust` commands work on both variants — they auto-detect whether AMD or
+NVIDIA hardware is present:
+
+```bash
+ujust gpu-info            # driver version, loaded modules, Vulkan, nouveau status
+ujust gpu-sensors         # one-shot readings (temp, VRAM, utilization, power, fan, clocks)
+ujust gpu-monitor         # live monitoring via nvidia-smi (Ctrl+C to exit)
+ujust gpu-test            # run Vulkan test (vkcube)
+```
+
+#### Power profiles (NVIDIA)
+
+```bash
+ujust gpu-performance     # persistence mode ON, power limit to maximum
+ujust gpu-powersave       # power limit to minimum (clocks reduce under load)
+ujust gpu-auto            # reset to defaults (persistence OFF, clocks reset)
+```
+
 #### Verify NVIDIA is working
 
 ```bash
 nvidia-smi                # GPU status, temperature, driver version
 lsmod | grep nvidia       # should show: nvidia, nvidia_modeset, nvidia_uvm, nvidia_drm
 lsmod | grep nouveau      # should be empty (nouveau is blacklisted)
-cat /proc/cmdline         # should contain: modprobe.blacklist=nouveau nvidia-drm.modeset=1
+cat /proc/cmdline         # should contain: rd.driver.blacklist=nouveau modprobe.blacklist=nouveau nvidia-drm.modeset=1
 ```
 
 #### Hybrid GPU laptops
