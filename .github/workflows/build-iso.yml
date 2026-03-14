@@ -15,8 +15,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ===========================================================================
+  # AMD variant (default)
+  # ===========================================================================
   build-iso:
-    name: Build ISO installer
+    name: Build ISO installer (AMD)
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
@@ -90,6 +93,112 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "date=${DATE}" >> "$GITHUB_OUTPUT"
           echo "filename=querencia-linux-${VERSION}-${DATE}.iso" >> "$GITHUB_OUTPUT"
+
+      - name: Rename ISO
+        run: |
+          ISO_FILE=$(find ./output -name "*.iso" -type f | head -1)
+          if [ -z "$ISO_FILE" ]; then
+            echo "::error::No ISO file found in output directory"
+            exit 1
+          fi
+          mv "$ISO_FILE" "./output/${{ steps.version.outputs.filename }}"
+          echo "ISO renamed to ${{ steps.version.outputs.filename }}"
+          ls -lh "./output/${{ steps.version.outputs.filename }}"
+
+      - name: Generate SHA256 checksum
+        run: |
+          cd ./output
+          sha256sum "${{ steps.version.outputs.filename }}" > "${{ steps.version.outputs.filename }}.sha256"
+          cat "${{ steps.version.outputs.filename }}.sha256"
+
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.filename }}
+          path: |
+            ./output/${{ steps.version.outputs.filename }}
+            ./output/${{ steps.version.outputs.filename }}.sha256
+          retention-days: 7
+          compression-level: 0
+
+  # ===========================================================================
+  # NVIDIA variant
+  # ===========================================================================
+  build-iso-nvidia:
+    name: Build ISO installer (NVIDIA)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+
+    env:
+      IMAGE_REF: ghcr.io/${{ github.repository_owner }}/querencia-linux-nvidia:latest
+
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@v10
+        with:
+          root-reserve-mb: 4096
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Podman
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get -qq -y install podman
+          podman --version
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            sudo podman login -u ${{ github.actor }} --password-stdin ghcr.io
+
+      - name: Pull image
+        run: |
+          sudo podman pull ${{ env.IMAGE_REF }}
+
+      - name: Build ISO
+        run: |
+          mkdir -p ./output
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            --network=host \
+            --security-opt label=type:unconfined_t \
+            -v ./output:/output \
+            -v ./iso.toml:/config.toml:ro \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type iso \
+            --use-librepo=False \
+            --progress verbose \
+            ${{ env.IMAGE_REF }}
+
+      - name: List output
+        if: always()
+        run: |
+          echo "=== Output directory ==="
+          find ./output -type f -exec ls -lh {} \;
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(sudo podman inspect ${{ env.IMAGE_REF }} --format '{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null || echo "latest")
+          DATE=$(date +%Y%m%d)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "date=${DATE}" >> "$GITHUB_OUTPUT"
+          echo "filename=querencia-linux-nvidia-${VERSION}-${DATE}.iso" >> "$GITHUB_OUTPUT"
 
       - name: Rename ISO
         run: |

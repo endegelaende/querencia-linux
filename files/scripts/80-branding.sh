@@ -3,6 +3,13 @@
 # Keep ID=almalinux so bootc tools can identify the base.
 set -xeuo pipefail
 
+# Determine GPU label from VARIANT env var (set by Containerfile ARG)
+if [[ "${VARIANT:-}" == "nvidia" ]]; then
+    GPU_LABEL="NVIDIA"
+else
+    GPU_LABEL="AMD"
+fi
+
 rm -f /etc/os-release /usr/lib/os-release
 printf '%s\n' \
     'NAME="Querencia Linux"' \
@@ -11,7 +18,7 @@ printf '%s\n' \
     'ID_LIKE="almalinux centos rhel fedora"' \
     'VERSION_ID="10"' \
     'PLATFORM_ID="platform:el10"' \
-    'PRETTY_NAME="Querencia Linux 10 -- Where Linux Feels at Home"' \
+    "PRETTY_NAME=\"Querencia Linux 10 (${GPU_LABEL}) -- Where Linux Feels at Home\"" \
     'ANSI_COLOR="0;34"' \
     'CPE_NAME="cpe:/o:almalinux:almalinux:10"' \
     'HOME_URL="https://github.com/endegelaende/querencia-linux"' \
@@ -24,7 +31,7 @@ ln -sf ../usr/lib/os-release /etc/os-release
 # /etc/issue -- text console login prompt
 printf '%s\n' \
     '' \
-    '  Querencia Linux 10 (MATE)' \
+    "  Querencia Linux 10 (MATE / ${GPU_LABEL})" \
     '  Where Linux Feels at Home' \
     '' \
     > /etc/issue

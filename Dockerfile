@@ -1,7 +1,7 @@
 # =============================================================================
 # Querencia Linux
 # "Where Linux Feels at Home"
-# Atomic Desktop with MATE | AlmaLinux 10 | AMD GPU (RX 6600 / RDNA 2)
+# Atomic Desktop with MATE | AlmaLinux 10 | GPU Support (AMD / NVIDIA)
 # =============================================================================
 # Based on the AlmaLinux Atomic Respin Template
 # https://github.com/AlmaLinux/atomic-respin-template
@@ -21,10 +21,11 @@ FROM quay.io/almalinuxorg/almalinux-bootc:10
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY
 ARG VARIANT
+ENV VARIANT=${VARIANT}
 
 # OCI Image Metadata
 LABEL org.opencontainers.image.title="Querencia Linux"
-LABEL org.opencontainers.image.description="Querencia Linux -- Atomic Desktop with MATE, AMD GPU, Multimedia Codecs and Micromamba (AlmaLinux 10)"
+LABEL org.opencontainers.image.description="Querencia Linux -- Atomic Desktop with MATE, GPU Support, Multimedia Codecs and Micromamba (AlmaLinux 10)"
 LABEL org.opencontainers.image.source="https://github.com/endegelaende/querencia-linux"
 LABEL org.opencontainers.image.vendor="endegelaende"
 LABEL org.opencontainers.image.version="10"
