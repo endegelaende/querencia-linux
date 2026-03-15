@@ -142,6 +142,20 @@ distrobox-export --app gimp      # Creates a .desktop file on the host
 
 The app will then show up in your MATE menu alongside native apps.
 
+### Third-Party Apps (ujust recipes)
+
+Some proprietary apps have dedicated install recipes that handle the entire Distrobox
+setup automatically:
+
+```bash
+ujust install-horizon     # Install Omnissa Horizon Client (VDI)
+ujust remove-horizon      # Remove Horizon Client and its container
+```
+
+The Horizon Client runs in a dedicated AlmaLinux 10 Distrobox with all required
+dependencies (GTK3, Firefox for SAML/Workspace ONE authentication). After installation,
+it appears in your application menu like a native app.
+
 ---
 
 ## Why Not dnf?
