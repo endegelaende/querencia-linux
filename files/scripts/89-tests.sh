@@ -61,6 +61,7 @@ done
 
 # Network
 rpm -q NetworkManager &>/dev/null && check_pass "NetworkManager installed" || check_fail "NetworkManager NOT installed"
+rpm -q samba-client &>/dev/null && check_pass "samba-client installed" || check_fail "samba-client NOT installed"
 
 # Printing
 rpm -q cups &>/dev/null && check_pass "cups installed" || check_fail "cups NOT installed"
