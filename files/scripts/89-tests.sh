@@ -171,6 +171,27 @@ else
     check_fail "querencia-first-boot-setup.service user unit MISSING"
 fi
 
+# querencia-flatpak-desktop-sync.path (75-post-install.sh, user path unit)
+if [ -f "/usr/lib/systemd/user/querencia-flatpak-desktop-sync.path" ]; then
+    check_pass "querencia-flatpak-desktop-sync.path user unit exists"
+else
+    check_fail "querencia-flatpak-desktop-sync.path user unit MISSING"
+fi
+
+# querencia-flatpak-desktop-sync.service (75-post-install.sh, user service)
+if [ -f "/usr/lib/systemd/user/querencia-flatpak-desktop-sync.service" ]; then
+    check_pass "querencia-flatpak-desktop-sync.service user unit exists"
+else
+    check_fail "querencia-flatpak-desktop-sync.service user unit MISSING"
+fi
+
+# querencia-flatpak-desktop-sync script (75-post-install.sh)
+if [ -x "/usr/libexec/querencia-flatpak-desktop-sync" ]; then
+    check_pass "/usr/libexec/querencia-flatpak-desktop-sync exists and is executable"
+else
+    check_fail "/usr/libexec/querencia-flatpak-desktop-sync MISSING or not executable"
+fi
+
 echo ""
 
 # =============================================================================

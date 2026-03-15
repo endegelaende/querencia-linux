@@ -145,6 +145,73 @@ chmod +x /usr/libexec/querencia-first-boot
 
 systemctl --global enable querencia-first-boot-setup.service 2>/dev/null || true
 
+# ---- Flatpak Desktop Entry Sync (persistent, per user) ----------------------
+# MATE's menu does not reliably scan ~/.local/share/flatpak/exports/share/applications/
+# even when XDG_DATA_DIRS includes that path. This systemd user path unit watches
+# the Flatpak export directory and triggers a service that symlinks new .desktop
+# files into ~/.local/share/applications/ + refreshes the desktop database.
+# This ensures apps installed via Warehouse or "flatpak install --user" appear
+# in the MATE menu immediately — not just at first boot.
+
+cat > /usr/lib/systemd/user/querencia-flatpak-desktop-sync.path <<'EOF'
+[Unit]
+Description=Watch Flatpak user app exports for desktop entry changes
+
+[Path]
+PathChanged=%h/.local/share/flatpak/exports/share/applications
+Unit=querencia-flatpak-desktop-sync.service
+
+[Install]
+WantedBy=default.target
+EOF
+
+cat > /usr/lib/systemd/user/querencia-flatpak-desktop-sync.service <<'EOF'
+[Unit]
+Description=Sync Flatpak desktop entries to local applications dir
+
+[Service]
+Type=oneshot
+# Small delay so Flatpak finishes writing all files before we sync
+ExecStartPre=/usr/bin/sleep 2
+ExecStart=/usr/libexec/querencia-flatpak-desktop-sync
+EOF
+
+cat > /usr/libexec/querencia-flatpak-desktop-sync <<'SYNC'
+#!/usr/bin/env bash
+set -euo pipefail
+
+FLATPAK_EXPORT="${HOME}/.local/share/flatpak/exports/share/applications"
+LOCAL_APPS="${HOME}/.local/share/applications"
+
+[ -d "${FLATPAK_EXPORT}" ] || exit 0
+mkdir -p "${LOCAL_APPS}"
+
+# Add symlinks for new Flatpak .desktop files
+for desktop_file in "${FLATPAK_EXPORT}"/*.desktop; do
+    [ -f "${desktop_file}" ] || continue
+    base="$(basename "${desktop_file}")"
+    if [ ! -e "${LOCAL_APPS}/${base}" ] || [ -L "${LOCAL_APPS}/${base}" ]; then
+        ln -sf "${desktop_file}" "${LOCAL_APPS}/${base}"
+    fi
+done
+
+# Remove stale symlinks (Flatpak app was uninstalled)
+for link in "${LOCAL_APPS}"/*.desktop; do
+    [ -L "${link}" ] || continue
+    if [ ! -e "${link}" ]; then
+        rm -f "${link}"
+    fi
+done
+
+# Refresh desktop database so MATE menu picks up changes
+if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "${LOCAL_APPS}" 2>/dev/null || true
+fi
+SYNC
+chmod +x /usr/libexec/querencia-flatpak-desktop-sync
+
+systemctl --global enable querencia-flatpak-desktop-sync.path 2>/dev/null || true
+
 # ---- Auto-Update Timer -------------------------------------------------------
 mkdir -p /usr/lib/systemd/system
 cat > /usr/lib/systemd/system/querencia-auto-update.timer <<'EOF'
