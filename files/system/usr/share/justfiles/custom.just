@@ -120,6 +120,52 @@ distrobox-upgrade:
     @echo "Done."
 
 # =============================================================================
+# Third-Party Apps (Distrobox)
+# =============================================================================
+
+# Install Omnissa Horizon Client (VDI) in a Distrobox container
+install-horizon:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    CONTAINER="horizon"
+    RPM_URL="https://download3.omnissa.com/software/CART26FQ4_LIN64_RPMPKG_2512.1/Omnissa-Horizon-Client-2512-8.17.1-22261155021.x64.rpm"
+    RPM_FILE="/tmp/omnissa-horizon-client.x86_64.rpm"
+    echo "=== Omnissa Horizon Client Installer ==="
+    echo ""
+    # Create AlmaLinux distrobox if it doesn't exist
+    if ! podman container exists "${CONTAINER}" 2>/dev/null; then
+        echo "Creating distrobox '${CONTAINER}'..."
+        distrobox create --name "${CONTAINER}" --image quay.io/almalinux/almalinux:10 --yes
+    else
+        echo "Distrobox '${CONTAINER}' already exists."
+    fi
+    echo ""
+    echo "Downloading Horizon Client RPM..."
+    distrobox enter "${CONTAINER}" -- bash -c "curl -fSL -o ${RPM_FILE} '${RPM_URL}'"
+    echo ""
+    echo "Installing Horizon Client..."
+    distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y ${RPM_FILE} && rm -f ${RPM_FILE}"
+    echo ""
+    echo "Exporting Horizon Client to host desktop..."
+    distrobox enter "${CONTAINER}" -- bash -c "distrobox-export --app vmware-view 2>/dev/null || true"
+    echo ""
+    echo "Done! Omnissa Horizon Client should appear in your application menu."
+    echo "If not, log out and back in."
+    echo ""
+    echo "To uninstall: ujust remove-horizon"
+
+# Remove Omnissa Horizon Client and its Distrobox
+remove-horizon:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    CONTAINER="horizon"
+    echo "Removing Horizon Client desktop integration..."
+    distrobox enter "${CONTAINER}" -- bash -c "distrobox-export --app vmware-view --delete 2>/dev/null || true"
+    echo "Removing distrobox '${CONTAINER}'..."
+    distrobox rm --force "${CONTAINER}" 2>/dev/null || true
+    echo "Done. Omnissa Horizon Client has been removed."
+
+# =============================================================================
 # GPU (auto-detects AMD or NVIDIA)
 # =============================================================================
 
