@@ -149,18 +149,16 @@ sudo reboot
 
 ### Fresh install with the ISO
 
-> Building the ISO requires Podman on Linux — see [Build](#build) below.
-
-1. Build the ISO (`make iso`) or grab it from GitHub Actions artifacts
-2. Write to USB (Ventoy, Rufus, or `dd`)
-3. Boot → Anaconda installer guides you through:
+1. Download the ISO from [querencialinux.org](https://querencialinux.org) — pick AMD or NVIDIA
+2. Write to USB (Ventoy, Rufus, balenaEtcher, or `dd`)
+3. Boot from USB → Anaconda installer guides you through:
    - **Language selection** — choose your preferred language
    - **Keyboard layout** — select your keyboard layout (no hardcoded default)
    - **Timezone** — select your timezone
    - **Network** — DHCP is enabled by default
    - **Disk partitioning** — choose your disk (no preset — you decide)
    - **User creation** — set up your user account and password
-4. Reboot into LightDM
+4. Remove USB & reboot into LightDM
 
 ### Test in a VM
 
