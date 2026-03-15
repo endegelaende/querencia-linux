@@ -555,6 +555,12 @@ See [`copr-fork/README.md`](copr-fork/README.md) for full package inventory, bra
 ## FAQ
 
 <details>
+<summary><b>Atomic, immutable, bootc, OCI — what?</b></summary>
+
+Your system is a **container image**. Instead of installing packages one by one and hoping nothing breaks, we build the entire OS as a single image — like a Docker container, but bootable. "Atomic" means updates swap the whole image at once (no half-updated Frankenstein systems). "Immutable" means the root filesystem is read-only (no `sudo rm -rf /` accidents). "bootc" is the tool that manages these images. And "OCI" is just the container format — same one Docker and Podman use. In practice: your system updates like a phone, rolls back like a game save, and breaks like… well, it doesn't.
+</details>
+
+<details>
 <summary><b>Can I still use dnf?</b></summary>
 
 No — the root filesystem is read-only. Use Micromamba for CLI tools and languages (`micromamba install ripgrep python`), Flatpak for GUI apps, or Distrobox for full mutable environments with dnf.
