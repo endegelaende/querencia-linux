@@ -31,6 +31,12 @@ Available in **two GPU variants** — same repo, same Dockerfile, two images:
 
 The root filesystem is **read-only**. Install software with Micromamba (CLI tools, languages, libraries), Flatpak (GUI apps), or Distrobox (full dev environments) — no root required.
 
+<p align="center">
+  <img src="assets/screenshot-desktop.png" alt="Querencia Linux — MATE Desktop" width="800">
+  <br>
+  <em>Yes, it has a taskbar. Yes, it has a start menu. No, we will not apologize.</em>
+</p>
+
 ---
 
 ## Architecture
