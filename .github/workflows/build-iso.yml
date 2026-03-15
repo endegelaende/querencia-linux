@@ -83,7 +83,11 @@ jobs:
         if: always()
         run: |
           echo "=== Output directory ==="
-          find ./output -type f -exec ls -lh {} \;
+          if [ -d ./output ]; then
+            find ./output -type f -exec ls -lh {} \;
+          else
+            echo "No output directory found — build likely failed before producing output."
+          fi
 
       - name: Get version info
         id: version
@@ -189,7 +193,11 @@ jobs:
         if: always()
         run: |
           echo "=== Output directory ==="
-          find ./output -type f -exec ls -lh {} \;
+          if [ -d ./output ]; then
+            find ./output -type f -exec ls -lh {} \;
+          else
+            echo "No output directory found — build likely failed before producing output."
+          fi
 
       - name: Get version info
         id: version

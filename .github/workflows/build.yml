@@ -11,6 +11,8 @@ on:
       - "CLAUDE.md"
       - "LICENSE"
       - "copr-fork/**"
+      - "Documentation/**"
+      - "assets/**"
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * 1"
