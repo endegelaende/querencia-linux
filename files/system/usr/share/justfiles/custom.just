@@ -140,8 +140,8 @@ install-horizon:
         echo "Distrobox '${CONTAINER}' already exists."
     fi
     echo ""
-    echo "Installing GTK/X11 dependencies..."
-    distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y gtk3 libXtst libusbx alsa-lib pulseaudio-libs mesa-libGL mesa-libEGL libxkbfile"
+    echo "Installing dependencies..."
+    distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y gtk3 libXtst libusbx alsa-lib pulseaudio-libs mesa-libGL mesa-libEGL libxkbfile xdg-utils firefox"
     echo ""
     echo "Downloading Horizon Client RPM..."
     distrobox enter "${CONTAINER}" -- bash -c "curl -fSL -o ${RPM_FILE} '${RPM_URL}'"
