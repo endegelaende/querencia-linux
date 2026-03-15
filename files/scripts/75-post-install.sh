@@ -36,6 +36,9 @@ enable cups.socket
 enable firewalld.service
 EOF
 
+# Mask rpm-ostree-countme (exists on bootc systems but fails without rpm-ostree)
+systemctl mask rpm-ostree-countme.service rpm-ostree-countme.timer
+
 # ---- ujust Shortcut ----------------------------------------------------------
 JUSTFILE_SRC="/usr/share/justfiles/custom.just"
 JUSTFILE_LINK="/usr/bin/ujust"
