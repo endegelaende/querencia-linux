@@ -9,6 +9,9 @@ chmod +x /usr/bin/querencia-welcome 2>/dev/null || true
 chmod +x /usr/bin/querencia-welcome-launcher 2>/dev/null || true
 chmod +x /usr/lib/querencia/welcome/querencia-welcome.py 2>/dev/null || true
 
+# ---- Querencia helper scripts (permissions) ----------------------------------
+chmod +x /usr/lib/querencia/scripts/*.sh 2>/dev/null || true
+
 # ---- XDG User Directories (English defaults) --------------------------------
 mkdir -p /etc/xdg
 cat > /etc/xdg/user-dirs.defaults <<'EOF'
