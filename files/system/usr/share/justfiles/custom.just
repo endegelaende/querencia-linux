@@ -163,11 +163,7 @@ install-horizon:
     fi
     echo ""
     echo "Configuring local browser handoff inside Distrobox..."
-    distrobox enter "${CONTAINER}" -- bash -c "mkdir -p ~/.local/bin && cat > ~/.local/bin/xdg-open <<'EOF'
-#!/usr/bin/env bash
-exec /usr/bin/firefox \"\$@\"
-EOF
-chmod +x ~/.local/bin/xdg-open"
+    distrobox enter "${CONTAINER}" -- bash -c 'mkdir -p ~/.local/bin && printf "#!/usr/bin/env bash\nexec /usr/bin/firefox \"\$@\"\n" > ~/.local/bin/xdg-open && chmod +x ~/.local/bin/xdg-open'
     echo ""
     echo "Downloading Horizon Client RPM..."
     distrobox enter "${CONTAINER}" -- bash -c "curl -fSL -o ${RPM_FILE} '${RPM_URL}'"
