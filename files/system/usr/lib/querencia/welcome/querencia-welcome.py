@@ -33,9 +33,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 
-import gettext
 import json
-import locale
 import os
 import platform
 import subprocess
@@ -46,6 +44,7 @@ from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 # =============================================================================
 # i18n Setup
 # =============================================================================
+
 
 # Detect system language — use first 2 chars (e.g. "de" from "de_DE.UTF-8")
 def _detect_lang():
@@ -172,37 +171,37 @@ TRANSLATIONS = {
     "with the MATE Desktop Environment. Your system updates itself as a whole "
     "image — safe, reliable, and always rollback-ready.": {
         "de": "Querencia Linux ist ein atomarer, unveränderlicher Desktop auf Basis von "
-              "AlmaLinux 10 mit der MATE-Desktopumgebung. Ihr System aktualisiert sich als "
-              "komplettes Image — sicher, zuverlässig und jederzeit rücksetzbar.",
+        "AlmaLinux 10 mit der MATE-Desktopumgebung. Ihr System aktualisiert sich als "
+        "komplettes Image — sicher, zuverlässig und jederzeit rücksetzbar.",
         "fr": "Querencia Linux est un bureau atomique et immuable basé sur AlmaLinux 10 "
-              "avec l'environnement de bureau MATE. Votre système se met à jour comme une "
-              "image complète — sûr, fiable et toujours prêt à être restauré.",
+        "avec l'environnement de bureau MATE. Votre système se met à jour comme une "
+        "image complète — sûr, fiable et toujours prêt à être restauré.",
         "es": "Querencia Linux es un escritorio atómico e inmutable basado en AlmaLinux 10 "
-              "con el entorno de escritorio MATE. Su sistema se actualiza como una imagen "
-              "completa — seguro, fiable y siempre reversible.",
+        "con el entorno de escritorio MATE. Su sistema se actualiza como una imagen "
+        "completa — seguro, fiable y siempre reversible.",
         "it": "Querencia Linux è un desktop atomico e immutabile basato su AlmaLinux 10 "
-              "con l'ambiente desktop MATE. Il sistema si aggiorna come immagine completa "
-              "— sicuro, affidabile e sempre ripristinabile.",
+        "con l'ambiente desktop MATE. Il sistema si aggiorna come immagine completa "
+        "— sicuro, affidabile e sempre ripristinabile.",
         "pt": "O Querencia Linux é um desktop atómico e imutável baseado no AlmaLinux 10 "
-              "com o ambiente de desktop MATE. O seu sistema atualiza-se como uma imagem "
-              "completa — seguro, fiável e sempre reversível.",
+        "com o ambiente de desktop MATE. O seu sistema atualiza-se como uma imagem "
+        "completa — seguro, fiável e sempre reversível.",
         "nl": "Querencia Linux is een atomair, onveranderlijk bureaublad gebaseerd op "
-              "AlmaLinux 10 met de MATE-desktopomgeving. Uw systeem werkt zichzelf bij als "
-              "compleet image — veilig, betrouwbaar en altijd terug te draaien.",
+        "AlmaLinux 10 met de MATE-desktopomgeving. Uw systeem werkt zichzelf bij als "
+        "compleet image — veilig, betrouwbaar en altijd terug te draaien.",
         "pl": "Querencia Linux to atomowy, niezmienny pulpit oparty na AlmaLinux 10 "
-              "ze środowiskiem MATE. System aktualizuje się jako cały obraz — bezpiecznie, "
-              "niezawodnie i zawsze z możliwością cofnięcia zmian.",
+        "ze środowiskiem MATE. System aktualizuje się jako cały obraz — bezpiecznie, "
+        "niezawodnie i zawsze z możliwością cofnięcia zmian.",
         "ru": "Querencia Linux — это атомарный неизменяемый рабочий стол на базе AlmaLinux 10 "
-              "с окружением MATE. Система обновляется как целый образ — безопасно, надёжно "
-              "и всегда с возможностью отката.",
+        "с окружением MATE. Система обновляется как целый образ — безопасно, надёжно "
+        "и всегда с возможностью отката.",
         "ja": "Querencia Linux は AlmaLinux 10 と MATE デスクトップ環境をベースにした "
-              "アトミックで不変のデスクトップです。システムはイメージ全体として更新されます "
-              "— 安全で信頼性が高く、いつでもロールバックできます。",
+        "アトミックで不変のデスクトップです。システムはイメージ全体として更新されます "
+        "— 安全で信頼性が高く、いつでもロールバックできます。",
         "zh": "Querencia Linux 是基于 AlmaLinux 10 和 MATE 桌面环境构建的原子化不可变桌面。"
-              "系统以完整镜像方式自动更新 — 安全、可靠，随时可以回滚。",
+        "系统以完整镜像方式自动更新 — 安全、可靠，随时可以回滚。",
         "ko": "Querencia Linux는 AlmaLinux 10과 MATE 데스크톱 환경을 기반으로 한 "
-              "원자적이고 불변인 데스크톱입니다. 시스템은 전체 이미지로 업데이트됩니다 "
-              "— 안전하고 신뢰할 수 있으며, 언제든 롤백할 수 있습니다.",
+        "원자적이고 불변인 데스크톱입니다. 시스템은 전체 이미지로 업데이트됩니다 "
+        "— 안전하고 신뢰할 수 있으며, 언제든 롤백할 수 있습니다.",
     },
     "Let's get started!": {
         "de": "Los geht's!",
@@ -218,18 +217,18 @@ TRANSLATIONS = {
         "ko": "시작합시다!",
     },
     # ---- First Steps page ----
-    "Get familiar with your MATE Desktop. Click \"Open\" to launch each tool.": {
-        "de": "Lernen Sie Ihren MATE-Desktop kennen. Klicken Sie auf \"Öffnen\", um jedes Werkzeug zu starten.",
+    'Get familiar with your MATE Desktop. Click "Open" to launch each tool.': {
+        "de": 'Lernen Sie Ihren MATE-Desktop kennen. Klicken Sie auf "Öffnen", um jedes Werkzeug zu starten.',
         "fr": "Familiarisez-vous avec votre bureau MATE. Cliquez sur « Ouvrir » pour lancer chaque outil.",
-        "es": "Familiarícese con su escritorio MATE. Haga clic en \"Abrir\" para iniciar cada herramienta.",
-        "it": "Familiarizza con il tuo desktop MATE. Fai clic su \"Apri\" per avviare ogni strumento.",
-        "pt": "Familiarize-se com o seu ambiente MATE. Clique em \"Abrir\" para iniciar cada ferramenta.",
-        "nl": "Maak kennis met uw MATE-bureaublad. Klik op \"Openen\" om elk hulpmiddel te starten.",
-        "pl": "Poznaj swoje środowisko MATE. Kliknij \"Otwórz\", aby uruchomić każde narzędzie.",
+        "es": 'Familiarícese con su escritorio MATE. Haga clic en "Abrir" para iniciar cada herramienta.',
+        "it": 'Familiarizza con il tuo desktop MATE. Fai clic su "Apri" per avviare ogni strumento.',
+        "pt": 'Familiarize-se com o seu ambiente MATE. Clique em "Abrir" para iniciar cada ferramenta.',
+        "nl": 'Maak kennis met uw MATE-bureaublad. Klik op "Openen" om elk hulpmiddel te starten.',
+        "pl": 'Poznaj swoje środowisko MATE. Kliknij "Otwórz", aby uruchomić każde narzędzie.',
         "ru": "Познакомьтесь с рабочим столом MATE. Нажмите «Открыть», чтобы запустить каждый инструмент.",
         "ja": "MATE デスクトップに慣れましょう。「開く」をクリックして各ツールを起動します。",
-        "zh": "熟悉您的 MATE 桌面。点击"打开"启动各个工具。",
-        "ko": "MATE 데스크톱을 살펴보세요. \"열기\"를 클릭하여 각 도구를 실행합니다.",
+        "zh": "熟悉您的 MATE 桌面。点击「打开」启动各个工具。",
+        "ko": 'MATE 데스크톱을 살펴보세요. "열기"를 클릭하여 각 도구를 실행합니다.',
     },
     "Open": {
         "de": "Öffnen",
@@ -262,27 +261,27 @@ TRANSLATIONS = {
     "Querencia comes with the BlueMenta theme, Noto fonts, "
     "and the Adwaita cursor.": {
         "de": "Passen Sie das Theme, die Symbole und Schriften Ihres MATE-Desktops an. "
-              "Querencia wird mit dem BlueMenta-Theme, Noto-Schriften und dem Adwaita-Cursor ausgeliefert.",
+        "Querencia wird mit dem BlueMenta-Theme, Noto-Schriften und dem Adwaita-Cursor ausgeliefert.",
         "fr": "Personnalisez le thème, les icônes et les polices de votre bureau MATE. "
-              "Querencia est livré avec le thème BlueMenta, les polices Noto et le curseur Adwaita.",
+        "Querencia est livré avec le thème BlueMenta, les polices Noto et le curseur Adwaita.",
         "es": "Personalice el tema, los iconos y las fuentes de su escritorio MATE. "
-              "Querencia incluye el tema BlueMenta, las fuentes Noto y el cursor Adwaita.",
+        "Querencia incluye el tema BlueMenta, las fuentes Noto y el cursor Adwaita.",
         "it": "Personalizza il tema, le icone e i caratteri del tuo desktop MATE. "
-              "Querencia include il tema BlueMenta, i font Noto e il cursore Adwaita.",
+        "Querencia include il tema BlueMenta, i font Noto e il cursore Adwaita.",
         "pt": "Personalize o tema, os ícones e as fontes do seu ambiente MATE. "
-              "O Querencia vem com o tema BlueMenta, fontes Noto e o cursor Adwaita.",
+        "O Querencia vem com o tema BlueMenta, fontes Noto e o cursor Adwaita.",
         "nl": "Pas het thema, de pictogrammen en lettertypen van uw MATE-bureaublad aan. "
-              "Querencia wordt geleverd met het BlueMenta-thema, Noto-lettertypen en de Adwaita-cursor.",
+        "Querencia wordt geleverd met het BlueMenta-thema, Noto-lettertypen en de Adwaita-cursor.",
         "pl": "Dostosuj motyw, ikony i czcionki pulpitu MATE. "
-              "Querencia zawiera motyw BlueMenta, czcionki Noto i kursor Adwaita.",
+        "Querencia zawiera motyw BlueMenta, czcionki Noto i kursor Adwaita.",
         "ru": "Настройте тему, значки и шрифты рабочего стола MATE. "
-              "Querencia поставляется с темой BlueMenta, шрифтами Noto и курсором Adwaita.",
+        "Querencia поставляется с темой BlueMenta, шрифтами Noto и курсором Adwaita.",
         "ja": "MATE デスクトップのテーマ、アイコン、フォントをカスタマイズできます。"
-              "Querencia には BlueMenta テーマ、Noto フォント、Adwaita カーソルが含まれています。",
+        "Querencia には BlueMenta テーマ、Noto フォント、Adwaita カーソルが含まれています。",
         "zh": "自定义 MATE 桌面的主题、图标和字体。"
-              "Querencia 预装了 BlueMenta 主题、Noto 字体和 Adwaita 光标。",
+        "Querencia 预装了 BlueMenta 主题、Noto 字体和 Adwaita 光标。",
         "ko": "MATE 데스크톱의 테마, 아이콘, 글꼴을 사용자 정의하세요. "
-              "Querencia에는 BlueMenta 테마, Noto 글꼴, Adwaita 커서가 포함되어 있습니다.",
+        "Querencia에는 BlueMenta 테마, Noto 글꼴, Adwaita 커서가 포함되어 있습니다.",
     },
     # -- First Steps: App Store --
     "App Store (Warehouse)": {
@@ -302,38 +301,38 @@ TRANSLATIONS = {
     "On an atomic system like Querencia, all desktop apps are Flatpaks — "
     "sandboxed and independent of the base system.": {
         "de": "Durchstöbern und installieren Sie Apps von Flathub mit Warehouse. "
-              "Auf einem atomaren System wie Querencia sind alle Desktop-Apps Flatpaks — "
-              "isoliert und unabhängig vom Grundsystem.",
+        "Auf einem atomaren System wie Querencia sind alle Desktop-Apps Flatpaks — "
+        "isoliert und unabhängig vom Grundsystem.",
         "fr": "Parcourez et installez des applications depuis Flathub avec Warehouse. "
-              "Sur un système atomique comme Querencia, toutes les applications de bureau "
-              "sont des Flatpaks — isolées et indépendantes du système de base.",
+        "Sur un système atomique comme Querencia, toutes les applications de bureau "
+        "sont des Flatpaks — isolées et indépendantes du système de base.",
         "es": "Explore e instale aplicaciones de Flathub con Warehouse. "
-              "En un sistema atómico como Querencia, todas las aplicaciones de escritorio "
-              "son Flatpaks — aisladas e independientes del sistema base.",
+        "En un sistema atómico como Querencia, todas las aplicaciones de escritorio "
+        "son Flatpaks — aisladas e independientes del sistema base.",
         "it": "Sfoglia e installa app da Flathub con Warehouse. "
-              "Su un sistema atomico come Querencia, tutte le app desktop sono Flatpak — "
-              "isolate e indipendenti dal sistema base.",
+        "Su un sistema atomico come Querencia, tutte le app desktop sono Flatpak — "
+        "isolate e indipendenti dal sistema base.",
         "pt": "Explore e instale aplicações do Flathub com o Warehouse. "
-              "Num sistema atómico como o Querencia, todas as aplicações são Flatpaks — "
-              "isoladas e independentes do sistema base.",
+        "Num sistema atómico como o Querencia, todas as aplicações são Flatpaks — "
+        "isoladas e independentes do sistema base.",
         "nl": "Blader door en installeer apps van Flathub met Warehouse. "
-              "Op een atomair systeem als Querencia zijn alle desktopapps Flatpaks — "
-              "geïsoleerd en onafhankelijk van het basissysteem.",
+        "Op een atomair systeem als Querencia zijn alle desktopapps Flatpaks — "
+        "geïsoleerd en onafhankelijk van het basissysteem.",
         "pl": "Przeglądaj i instaluj aplikacje z Flathub za pomocą Warehouse. "
-              "Na systemie atomowym jak Querencia wszystkie aplikacje to Flatpaki — "
-              "izolowane i niezależne od systemu bazowego.",
+        "Na systemie atomowym jak Querencia wszystkie aplikacje to Flatpaki — "
+        "izolowane i niezależne od systemu bazowego.",
         "ru": "Просматривайте и устанавливайте приложения из Flathub через Warehouse. "
-              "В атомарной системе как Querencia все приложения — это Flatpak-пакеты, "
-              "изолированные и независимые от базовой системы.",
+        "В атомарной системе как Querencia все приложения — это Flatpak-пакеты, "
+        "изолированные и независимые от базовой системы.",
         "ja": "Warehouse を使って Flathub からアプリを閲覧・インストールできます。"
-              "Querencia のようなアトミックシステムでは、すべてのデスクトップアプリは "
-              "Flatpak です — サンドボックス化され、ベースシステムから独立しています。",
+        "Querencia のようなアトミックシステムでは、すべてのデスクトップアプリは "
+        "Flatpak です — サンドボックス化され、ベースシステムから独立しています。",
         "zh": "使用 Warehouse 浏览和安装 Flathub 上的应用。"
-              "在 Querencia 这样的原子化系统上，所有桌面应用都是 Flatpak — "
-              "沙盒化且独立于基础系统。",
+        "在 Querencia 这样的原子化系统上，所有桌面应用都是 Flatpak — "
+        "沙盒化且独立于基础系统。",
         "ko": "Warehouse를 사용하여 Flathub에서 앱을 탐색하고 설치하세요. "
-              "Querencia와 같은 원자적 시스템에서 모든 데스크톱 앱은 Flatpak이며 "
-              "— 샌드박스로 격리되어 기본 시스템과 독립적입니다.",
+        "Querencia와 같은 원자적 시스템에서 모든 데스크톱 앱은 Flatpak이며 "
+        "— 샌드박스로 격리되어 기본 시스템과 독립적입니다.",
     },
     # -- First Steps: System Settings (MATE Control Center) --
     "MATE Control Center": {
@@ -353,37 +352,37 @@ TRANSLATIONS = {
     "default applications, and more. This is the central settings "
     "hub for the MATE Desktop.": {
         "de": "Konfigurieren Sie Bildschirme, Tastaturlayouts, Maus, Netzwerk, "
-              "Standardanwendungen und mehr. Dies ist die zentrale Einstellungszentrale "
-              "der MATE-Desktopumgebung.",
+        "Standardanwendungen und mehr. Dies ist die zentrale Einstellungszentrale "
+        "der MATE-Desktopumgebung.",
         "fr": "Configurez les écrans, dispositions de clavier, souris, réseau, "
-              "applications par défaut et plus. C'est le centre de configuration "
-              "de l'environnement de bureau MATE.",
+        "applications par défaut et plus. C'est le centre de configuration "
+        "de l'environnement de bureau MATE.",
         "es": "Configure pantallas, disposiciones de teclado, ratón, red, "
-              "aplicaciones predeterminadas y más. Este es el centro de configuración "
-              "del escritorio MATE.",
+        "aplicaciones predeterminadas y más. Este es el centro de configuración "
+        "del escritorio MATE.",
         "it": "Configura schermi, layout di tastiera, mouse, rete, "
-              "applicazioni predefinite e altro. Questo è il centro impostazioni "
-              "dell'ambiente desktop MATE.",
+        "applicazioni predefinite e altro. Questo è il centro impostazioni "
+        "dell'ambiente desktop MATE.",
         "pt": "Configure ecrãs, disposições de teclado, rato, rede, "
-              "aplicações predefinidas e mais. Este é o centro de configuração "
-              "do ambiente de trabalho MATE.",
+        "aplicações predefinidas e mais. Este é o centro de configuração "
+        "do ambiente de trabalho MATE.",
         "nl": "Configureer beeldschermen, toetsenbordindelingen, muis, netwerk, "
-              "standaardtoepassingen en meer. Dit is het centrale instellingencentrum "
-              "van de MATE-desktopomgeving.",
+        "standaardtoepassingen en meer. Dit is het centrale instellingencentrum "
+        "van de MATE-desktopomgeving.",
         "pl": "Skonfiguruj wyświetlacze, układy klawiatury, mysz, sieć, "
-              "domyślne aplikacje i więcej. To centralne centrum ustawień "
-              "środowiska MATE.",
+        "domyślne aplikacje i więcej. To centralne centrum ustawień "
+        "środowiska MATE.",
         "ru": "Настройте дисплеи, раскладки клавиатуры, мышь, сеть, "
-              "приложения по умолчанию и многое другое. Это центр настроек "
-              "рабочего стола MATE.",
+        "приложения по умолчанию и многое другое. Это центр настроек "
+        "рабочего стола MATE.",
         "ja": "ディスプレイ、キーボードレイアウト、マウス、ネットワーク、"
-              "デフォルトアプリケーションなどを設定できます。MATE デスクトップの"
-              "中央設定ハブです。",
+        "デフォルトアプリケーションなどを設定できます。MATE デスクトップの"
+        "中央設定ハブです。",
         "zh": "配置显示器、键盘布局、鼠标、网络、默认应用程序等。"
-              "这是 MATE 桌面环境的中央设置中心。",
+        "这是 MATE 桌面环境的中央设置中心。",
         "ko": "디스플레이, 키보드 레이아웃, 마우스, 네트워크, "
-              "기본 응용 프로그램 등을 구성합니다. MATE 데스크톱의 "
-              "중앙 설정 허브입니다.",
+        "기본 응용 프로그램 등을 구성합니다. MATE 데스크톱의 "
+        "중앙 설정 허브입니다.",
     },
     # -- First Steps: File Manager (Caja) --
     "File Manager (Caja)": {
@@ -403,37 +402,37 @@ TRANSLATIONS = {
     "manage bookmarks, and connect to network shares. "
     "It supports tabs, split view, and file previews.": {
         "de": "Caja ist der MATE-Dateimanager. Durchsuchen Sie Ihre Dateien, "
-              "verwalten Sie Lesezeichen und verbinden Sie sich mit Netzwerkfreigaben. "
-              "Er unterstützt Tabs, geteilte Ansicht und Dateivorschau.",
+        "verwalten Sie Lesezeichen und verbinden Sie sich mit Netzwerkfreigaben. "
+        "Er unterstützt Tabs, geteilte Ansicht und Dateivorschau.",
         "fr": "Caja est le gestionnaire de fichiers MATE. Parcourez vos fichiers, "
-              "gérez les signets et connectez-vous aux partages réseau. "
-              "Il prend en charge les onglets, la vue divisée et les aperçus.",
+        "gérez les signets et connectez-vous aux partages réseau. "
+        "Il prend en charge les onglets, la vue divisée et les aperçus.",
         "es": "Caja es el gestor de archivos de MATE. Explore sus archivos, "
-              "gestione marcadores y conéctese a recursos compartidos en red. "
-              "Soporta pestañas, vista dividida y vista previa de archivos.",
+        "gestione marcadores y conéctese a recursos compartidos en red. "
+        "Soporta pestañas, vista dividida y vista previa de archivos.",
         "it": "Caja è il file manager di MATE. Sfoglia i tuoi file, "
-              "gestisci i segnalibri e connettiti alle condivisioni di rete. "
-              "Supporta schede, vista divisa e anteprime dei file.",
+        "gestisci i segnalibri e connettiti alle condivisioni di rete. "
+        "Supporta schede, vista divisa e anteprime dei file.",
         "pt": "O Caja é o gestor de ficheiros do MATE. Navegue pelos seus ficheiros, "
-              "gerencie favoritos e conecte-se a partilhas de rede. "
-              "Suporta separadores, vista dividida e pré-visualização de ficheiros.",
+        "gerencie favoritos e conecte-se a partilhas de rede. "
+        "Suporta separadores, vista dividida e pré-visualização de ficheiros.",
         "nl": "Caja is de MATE-bestandsbeheerder. Blader door uw bestanden, "
-              "beheer bladwijzers en maak verbinding met netwerkshares. "
-              "Het ondersteunt tabbladen, gesplitste weergave en bestandsvoorbeelden.",
+        "beheer bladwijzers en maak verbinding met netwerkshares. "
+        "Het ondersteunt tabbladen, gesplitste weergave en bestandsvoorbeelden.",
         "pl": "Caja to menedżer plików MATE. Przeglądaj pliki, "
-              "zarządzaj zakładkami i łącz się z udziałami sieciowymi. "
-              "Obsługuje karty, widok podzielony i podgląd plików.",
+        "zarządzaj zakładkami i łącz się z udziałami sieciowymi. "
+        "Obsługuje karty, widok podzielony i podgląd plików.",
         "ru": "Caja — файловый менеджер MATE. Просматривайте файлы, "
-              "управляйте закладками и подключайтесь к сетевым ресурсам. "
-              "Поддерживает вкладки, разделённый вид и предпросмотр файлов.",
+        "управляйте закладками и подключайтесь к сетевым ресурсам. "
+        "Поддерживает вкладки, разделённый вид и предпросмотр файлов.",
         "ja": "Caja は MATE のファイルマネージャーです。ファイルの閲覧、"
-              "ブックマークの管理、ネットワーク共有への接続ができます。"
-              "タブ、分割表示、ファイルプレビューに対応しています。",
+        "ブックマークの管理、ネットワーク共有への接続ができます。"
+        "タブ、分割表示、ファイルプレビューに対応しています。",
         "zh": "Caja 是 MATE 的文件管理器。浏览文件、管理书签、连接网络共享。"
-              "支持标签页、分屏视图和文件预览。",
+        "支持标签页、分屏视图和文件预览。",
         "ko": "Caja는 MATE 파일 관리자입니다. 파일 탐색, "
-              "북마크 관리, 네트워크 공유 연결이 가능합니다. "
-              "탭, 분할 보기, 파일 미리보기를 지원합니다.",
+        "북마크 관리, 네트워크 공유 연결이 가능합니다. "
+        "탭, 분할 보기, 파일 미리보기를 지원합니다.",
     },
     # -- First Steps: Firewall --
     "Firewall": {
@@ -452,27 +451,27 @@ TRANSLATIONS = {
     "Your firewall (firewalld) is enabled by default to protect your computer. "
     "Open this tool to manage rules and allow specific services or ports.": {
         "de": "Ihre Firewall (firewalld) ist standardmäßig aktiviert, um Ihren Computer zu schützen. "
-              "Öffnen Sie dieses Tool, um Regeln zu verwalten und bestimmte Dienste oder Ports zuzulassen.",
+        "Öffnen Sie dieses Tool, um Regeln zu verwalten und bestimmte Dienste oder Ports zuzulassen.",
         "fr": "Votre pare-feu (firewalld) est activé par défaut pour protéger votre ordinateur. "
-              "Ouvrez cet outil pour gérer les règles et autoriser des services ou ports spécifiques.",
+        "Ouvrez cet outil pour gérer les règles et autoriser des services ou ports spécifiques.",
         "es": "Su cortafuegos (firewalld) está activado por defecto para proteger su equipo. "
-              "Abra esta herramienta para gestionar reglas y permitir servicios o puertos específicos.",
+        "Abra esta herramienta para gestionar reglas y permitir servicios o puertos específicos.",
         "it": "Il firewall (firewalld) è abilitato per impostazione predefinita per proteggere il computer. "
-              "Apri questo strumento per gestire le regole e consentire servizi o porte specifiche.",
+        "Apri questo strumento per gestire le regole e consentire servizi o porte specifiche.",
         "pt": "A sua firewall (firewalld) está ativada por predefinição para proteger o seu computador. "
-              "Abra esta ferramenta para gerir regras e permitir serviços ou portas específicas.",
+        "Abra esta ferramenta para gerir regras e permitir serviços ou portas específicas.",
         "nl": "Uw firewall (firewalld) is standaard ingeschakeld om uw computer te beschermen. "
-              "Open dit hulpmiddel om regels te beheren en specifieke services of poorten toe te staan.",
+        "Open dit hulpmiddel om regels te beheren en specifieke services of poorten toe te staan.",
         "pl": "Zapora sieciowa (firewalld) jest domyślnie włączona w celu ochrony komputera. "
-              "Otwórz to narzędzie, aby zarządzać regułami i zezwalać na określone usługi lub porty.",
+        "Otwórz to narzędzie, aby zarządzać regułami i zezwalać na określone usługi lub porty.",
         "ru": "Брандмауэр (firewalld) включён по умолчанию для защиты вашего компьютера. "
-              "Откройте этот инструмент для управления правилами и разрешения определённых служб или портов.",
+        "Откройте этот инструмент для управления правилами и разрешения определённых служб или портов.",
         "ja": "ファイアウォール（firewalld）はコンピューターを保護するためにデフォルトで有効です。"
-              "このツールを開いてルールを管理し、特定のサービスやポートを許可できます。",
+        "このツールを開いてルールを管理し、特定のサービスやポートを許可できます。",
         "zh": "防火墙（firewalld）默认启用以保护您的计算机。"
-              "打开此工具管理规则，允许特定服务或端口。",
+        "打开此工具管理规则，允许特定服务或端口。",
         "ko": "방화벽(firewalld)은 컴퓨터를 보호하기 위해 기본적으로 활성화되어 있습니다. "
-              "이 도구를 열어 규칙을 관리하고 특정 서비스나 포트를 허용하세요.",
+        "이 도구를 열어 규칙을 관리하고 특정 서비스나 포트를 허용하세요.",
     },
     # -- First Steps: Updates --
     "Updates": {
@@ -492,63 +491,63 @@ TRANSLATIONS = {
     "downloaded in the background and applied on reboot. You can also update "
     "manually. Updates are safe — you can always roll back with 'ujust rollback'.": {
         "de": "Querencia aktualisiert sich automatisch alle 6 Stunden. Ein neues System-Image "
-              "wird im Hintergrund heruntergeladen und beim Neustart angewendet. Sie können auch "
-              "manuell aktualisieren. Updates sind sicher — Sie können mit 'ujust rollback' jederzeit zurücksetzen.",
+        "wird im Hintergrund heruntergeladen und beim Neustart angewendet. Sie können auch "
+        "manuell aktualisieren. Updates sind sicher — Sie können mit 'ujust rollback' jederzeit zurücksetzen.",
         "fr": "Querencia se met à jour automatiquement toutes les 6 heures. Une nouvelle image système "
-              "est téléchargée en arrière-plan et appliquée au redémarrage. Vous pouvez aussi mettre à jour "
-              "manuellement. Les mises à jour sont sûres — vous pouvez toujours revenir en arrière avec 'ujust rollback'.",
+        "est téléchargée en arrière-plan et appliquée au redémarrage. Vous pouvez aussi mettre à jour "
+        "manuellement. Les mises à jour sont sûres — vous pouvez toujours revenir en arrière avec 'ujust rollback'.",
         "es": "Querencia se actualiza automáticamente cada 6 horas. Una nueva imagen del sistema se "
-              "descarga en segundo plano y se aplica al reiniciar. También puede actualizar "
-              "manualmente. Las actualizaciones son seguras — siempre puede revertir con 'ujust rollback'.",
+        "descarga en segundo plano y se aplica al reiniciar. También puede actualizar "
+        "manualmente. Las actualizaciones son seguras — siempre puede revertir con 'ujust rollback'.",
         "it": "Querencia si aggiorna automaticamente ogni 6 ore. Una nuova immagine di sistema viene "
-              "scaricata in background e applicata al riavvio. Puoi anche aggiornare "
-              "manualmente. Gli aggiornamenti sono sicuri — puoi sempre tornare indietro con 'ujust rollback'.",
+        "scaricata in background e applicata al riavvio. Puoi anche aggiornare "
+        "manualmente. Gli aggiornamenti sono sicuri — puoi sempre tornare indietro con 'ujust rollback'.",
         "pt": "O Querencia atualiza-se automaticamente a cada 6 horas. Uma nova imagem do sistema é "
-              "descarregada em segundo plano e aplicada ao reiniciar. Também pode atualizar "
-              "manualmente. As atualizações são seguras — pode sempre reverter com 'ujust rollback'.",
+        "descarregada em segundo plano e aplicada ao reiniciar. Também pode atualizar "
+        "manualmente. As atualizações são seguras — pode sempre reverter com 'ujust rollback'.",
         "nl": "Querencia werkt automatisch elke 6 uur bij. Een nieuw systeemimage wordt op de "
-              "achtergrond gedownload en bij herstart toegepast. U kunt ook handmatig bijwerken. "
-              "Updates zijn veilig — u kunt altijd terugdraaien met 'ujust rollback'.",
+        "achtergrond gedownload en bij herstart toegepast. U kunt ook handmatig bijwerken. "
+        "Updates zijn veilig — u kunt altijd terugdraaien met 'ujust rollback'.",
         "pl": "Querencia aktualizuje się automatycznie co 6 godzin. Nowy obraz systemu jest pobierany "
-              "w tle i stosowany przy ponownym uruchomieniu. Możesz też zaktualizować ręcznie. "
-              "Aktualizacje są bezpieczne — zawsze możesz cofnąć zmiany poleceniem 'ujust rollback'.",
+        "w tle i stosowany przy ponownym uruchomieniu. Możesz też zaktualizować ręcznie. "
+        "Aktualizacje są bezpieczne — zawsze możesz cofnąć zmiany poleceniem 'ujust rollback'.",
         "ru": "Querencia автоматически обновляется каждые 6 часов. Новый образ системы загружается "
-              "в фоне и применяется при перезагрузке. Вы также можете обновить вручную. "
-              "Обновления безопасны — вы всегда можете откатиться с помощью 'ujust rollback'.",
+        "в фоне и применяется при перезагрузке. Вы также можете обновить вручную. "
+        "Обновления безопасны — вы всегда можете откатиться с помощью 'ujust rollback'.",
         "ja": "Querencia は 6 時間ごとに自動的に更新されます。新しいシステムイメージは "
-              "バックグラウンドでダウンロードされ、再起動時に適用されます。手動で更新することもできます。"
-              "更新は安全です — 'ujust rollback' でいつでもロールバックできます。",
+        "バックグラウンドでダウンロードされ、再起動時に適用されます。手動で更新することもできます。"
+        "更新は安全です — 'ujust rollback' でいつでもロールバックできます。",
         "zh": "Querencia 每 6 小时自动更新一次。新的系统镜像在后台下载，重启时应用。"
-              "您也可以手动更新。更新是安全的 — 您始终可以使用 'ujust rollback' 回滚。",
+        "您也可以手动更新。更新是安全的 — 您始终可以使用 'ujust rollback' 回滚。",
         "ko": "Querencia는 6시간마다 자동으로 업데이트됩니다. 새 시스템 이미지가 "
-              "백그라운드에서 다운로드되고 재부팅 시 적용됩니다. 수동으로 업데이트할 수도 있습니다. "
-              "업데이트는 안전합니다 — 'ujust rollback'으로 언제든 롤백할 수 있습니다.",
+        "백그라운드에서 다운로드되고 재부팅 시 적용됩니다. 수동으로 업데이트할 수도 있습니다. "
+        "업데이트는 안전합니다 — 'ujust rollback'으로 언제든 롤백할 수 있습니다.",
     },
     # ---- Installing Software page ----
     "Querencia Linux is an atomic system. Software is installed through "
     "three methods, each suited for different use cases.": {
         "de": "Querencia Linux ist ein atomares System. Software wird über "
-              "drei Methoden installiert, die jeweils für unterschiedliche Anwendungsfälle geeignet sind.",
+        "drei Methoden installiert, die jeweils für unterschiedliche Anwendungsfälle geeignet sind.",
         "fr": "Querencia Linux est un système atomique. Les logiciels s'installent "
-              "via trois méthodes, chacune adaptée à différents cas d'utilisation.",
+        "via trois méthodes, chacune adaptée à différents cas d'utilisation.",
         "es": "Querencia Linux es un sistema atómico. El software se instala "
-              "mediante tres métodos, cada uno adecuado para diferentes casos de uso.",
+        "mediante tres métodos, cada uno adecuado para diferentes casos de uso.",
         "it": "Querencia Linux è un sistema atomico. Il software si installa "
-              "tramite tre metodi, ognuno adatto a diversi casi d'uso.",
+        "tramite tre metodi, ognuno adatto a diversi casi d'uso.",
         "pt": "O Querencia Linux é um sistema atómico. O software é instalado "
-              "através de três métodos, cada um adequado a diferentes cenários.",
+        "através de três métodos, cada um adequado a diferentes cenários.",
         "nl": "Querencia Linux is een atomair systeem. Software wordt geïnstalleerd "
-              "via drie methoden, elk geschikt voor verschillende toepassingen.",
+        "via drie methoden, elk geschikt voor verschillende toepassingen.",
         "pl": "Querencia Linux to system atomowy. Oprogramowanie instaluje się "
-              "trzema metodami, z których każda jest odpowiednia do innych zastosowań.",
+        "trzema metodami, z których każda jest odpowiednia do innych zastosowań.",
         "ru": "Querencia Linux — атомарная система. Программы устанавливаются "
-              "тремя способами, каждый из которых подходит для разных задач.",
+        "тремя способами, каждый из которых подходит для разных задач.",
         "ja": "Querencia Linux はアトミックシステムです。ソフトウェアは "
-              "3 つの方法でインストールでき、それぞれ異なる用途に適しています。",
+        "3 つの方法でインストールでき、それぞれ異なる用途に適しています。",
         "zh": "Querencia Linux 是一个原子化系统。软件通过三种方式安装，"
-              "每种方式适合不同的使用场景。",
+        "每种方式适合不同的使用场景。",
         "ko": "Querencia Linux는 원자적 시스템입니다. 소프트웨어는 "
-              "세 가지 방법으로 설치되며, 각각 다른 용도에 적합합니다.",
+        "세 가지 방법으로 설치되며, 각각 다른 용도에 적합합니다.",
     },
     # -- Software: Flatpak --
     "recommended": {
@@ -567,27 +566,27 @@ TRANSLATIONS = {
     "Desktop apps like LibreOffice, VLC, and GIMP come from Flathub. "
     "Open Warehouse from the MATE menu or install from the terminal.": {
         "de": "Desktop-Apps wie LibreOffice, VLC und GIMP kommen von Flathub. "
-              "Öffnen Sie Warehouse aus dem MATE-Menü oder installieren Sie per Terminal.",
+        "Öffnen Sie Warehouse aus dem MATE-Menü oder installieren Sie per Terminal.",
         "fr": "Les applications de bureau comme LibreOffice, VLC et GIMP viennent de Flathub. "
-              "Ouvrez Warehouse depuis le menu MATE ou installez depuis le terminal.",
+        "Ouvrez Warehouse depuis le menu MATE ou installez depuis le terminal.",
         "es": "Las aplicaciones de escritorio como LibreOffice, VLC y GIMP vienen de Flathub. "
-              "Abra Warehouse desde el menú de MATE o instale desde la terminal.",
+        "Abra Warehouse desde el menú de MATE o instale desde la terminal.",
         "it": "Le applicazioni desktop come LibreOffice, VLC e GIMP vengono da Flathub. "
-              "Apri Warehouse dal menu MATE o installa dal terminale.",
+        "Apri Warehouse dal menu MATE o installa dal terminale.",
         "pt": "As aplicações de desktop como LibreOffice, VLC e GIMP vêm do Flathub. "
-              "Abra o Warehouse a partir do menu MATE ou instale a partir do terminal.",
+        "Abra o Warehouse a partir do menu MATE ou instale a partir do terminal.",
         "nl": "Desktop-apps zoals LibreOffice, VLC en GIMP komen van Flathub. "
-              "Open Warehouse vanuit het MATE-menu of installeer via de terminal.",
+        "Open Warehouse vanuit het MATE-menu of installeer via de terminal.",
         "pl": "Aplikacje takie jak LibreOffice, VLC i GIMP pochodzą z Flathub. "
-              "Otwórz Warehouse z menu MATE lub zainstaluj z terminala.",
+        "Otwórz Warehouse z menu MATE lub zainstaluj z terminala.",
         "ru": "Приложения как LibreOffice, VLC и GIMP устанавливаются из Flathub. "
-              "Откройте Warehouse из меню MATE или установите из терминала.",
+        "Откройте Warehouse из меню MATE или установите из терминала.",
         "ja": "LibreOffice、VLC、GIMP などのデスクトップアプリは Flathub から入手できます。"
-              "MATE メニューから Warehouse を開くか、ターミナルからインストールできます。",
+        "MATE メニューから Warehouse を開くか、ターミナルからインストールできます。",
         "zh": "LibreOffice、VLC、GIMP 等桌面应用来自 Flathub。"
-              "从 MATE 菜单打开 Warehouse 或从终端安装。",
+        "从 MATE 菜单打开 Warehouse 或从终端安装。",
         "ko": "LibreOffice, VLC, GIMP 같은 데스크톱 앱은 Flathub에서 제공됩니다. "
-              "MATE 메뉴에서 Warehouse를 열거나 터미널에서 설치하세요.",
+        "MATE 메뉴에서 Warehouse를 열거나 터미널에서 설치하세요.",
     },
     # -- Software: Micromamba --
     "CLI tools": {
@@ -606,27 +605,27 @@ TRANSLATIONS = {
     "CLI tools and developer packages. Works like conda but faster. "
     "Pre-installed — just open MATE Terminal and run commands.": {
         "de": "Kommandozeilen-Werkzeuge und Entwicklerpakete. Funktioniert wie conda, aber schneller. "
-              "Vorinstalliert — öffnen Sie einfach das MATE-Terminal und führen Sie Befehle aus.",
+        "Vorinstalliert — öffnen Sie einfach das MATE-Terminal und führen Sie Befehle aus.",
         "fr": "Outils en ligne de commande et paquets de développement. Fonctionne comme conda mais plus vite. "
-              "Préinstallé — ouvrez simplement le terminal MATE et exécutez des commandes.",
+        "Préinstallé — ouvrez simplement le terminal MATE et exécutez des commandes.",
         "es": "Herramientas de línea de comandos y paquetes de desarrollo. Funciona como conda pero más rápido. "
-              "Preinstalado — simplemente abra la terminal de MATE y ejecute comandos.",
+        "Preinstalado — simplemente abra la terminal de MATE y ejecute comandos.",
         "it": "Strumenti a riga di comando e pacchetti per sviluppatori. Funziona come conda ma più veloce. "
-              "Preinstallato — apri il terminale MATE ed esegui i comandi.",
+        "Preinstallato — apri il terminale MATE ed esegui i comandi.",
         "pt": "Ferramentas de linha de comando e pacotes de desenvolvimento. Funciona como o conda mas mais rápido. "
-              "Pré-instalado — abra o terminal MATE e execute comandos.",
+        "Pré-instalado — abra o terminal MATE e execute comandos.",
         "nl": "CLI-tools en ontwikkelpakketten. Werkt als conda maar sneller. "
-              "Voorgeïnstalleerd — open gewoon de MATE-terminal en voer opdrachten uit.",
+        "Voorgeïnstalleerd — open gewoon de MATE-terminal en voer opdrachten uit.",
         "pl": "Narzędzia wiersza poleceń i pakiety deweloperskie. Działa jak conda, ale szybciej. "
-              "Preinstalowany — po prostu otwórz terminal MATE i uruchamiaj polecenia.",
+        "Preinstalowany — po prostu otwórz terminal MATE i uruchamiaj polecenia.",
         "ru": "Консольные утилиты и пакеты для разработчиков. Работает как conda, но быстрее. "
-              "Предустановлен — просто откройте терминал MATE и выполняйте команды.",
+        "Предустановлен — просто откройте терминал MATE и выполняйте команды.",
         "ja": "CLI ツールと開発パッケージ。conda のように動作しますがより高速です。"
-              "プリインストール済み — MATE ターミナルを開いてコマンドを実行するだけです。",
+        "プリインストール済み — MATE ターミナルを開いてコマンドを実行するだけです。",
         "zh": "CLI 工具和开发者包。类似 conda 但更快。"
-              "已预装 — 只需打开 MATE 终端并运行命令。",
+        "已预装 — 只需打开 MATE 终端并运行命令。",
         "ko": "CLI 도구와 개발자 패키지. conda처럼 작동하지만 더 빠릅니다. "
-              "사전 설치됨 — MATE 터미널을 열고 명령을 실행하기만 하면 됩니다.",
+        "사전 설치됨 — MATE 터미널을 열고 명령을 실행하기만 하면 됩니다.",
     },
     # -- Software: Distrobox --
     "containers": {
@@ -646,62 +645,62 @@ TRANSLATIONS = {
     "disposable container with dnf or apt. Perfect for development. "
     "Integrates seamlessly with the MATE Desktop.": {
         "de": "Benötigen Sie eine vollständige veränderbare Linux-Umgebung? Distrobox gibt Ihnen einen "
-              "Wegwerf-Container mit dnf oder apt. Perfekt für die Entwicklung. "
-              "Integriert sich nahtlos in den MATE-Desktop.",
+        "Wegwerf-Container mit dnf oder apt. Perfekt für die Entwicklung. "
+        "Integriert sich nahtlos in den MATE-Desktop.",
         "fr": "Besoin d'un environnement Linux complet et modifiable ? Distrobox vous donne un "
-              "conteneur jetable avec dnf ou apt. Parfait pour le développement. "
-              "S'intègre parfaitement au bureau MATE.",
+        "conteneur jetable avec dnf ou apt. Parfait pour le développement. "
+        "S'intègre parfaitement au bureau MATE.",
         "es": "¿Necesita un entorno Linux completo y modificable? Distrobox le da un "
-              "contenedor desechable con dnf o apt. Perfecto para desarrollo. "
-              "Se integra perfectamente con el escritorio MATE.",
+        "contenedor desechable con dnf o apt. Perfecto para desarrollo. "
+        "Se integra perfectamente con el escritorio MATE.",
         "it": "Hai bisogno di un ambiente Linux completo e modificabile? Distrobox ti dà un "
-              "contenitore usa e getta con dnf o apt. Perfetto per lo sviluppo. "
-              "Si integra perfettamente con il desktop MATE.",
+        "contenitore usa e getta con dnf o apt. Perfetto per lo sviluppo. "
+        "Si integra perfettamente con il desktop MATE.",
         "pt": "Precisa de um ambiente Linux completo e modificável? O Distrobox dá-lhe um "
-              "contentor descartável com dnf ou apt. Perfeito para desenvolvimento. "
-              "Integra-se perfeitamente com o ambiente MATE.",
+        "contentor descartável com dnf ou apt. Perfeito para desenvolvimento. "
+        "Integra-se perfeitamente com o ambiente MATE.",
         "nl": "Heeft u een volledige aanpasbare Linux-omgeving nodig? Distrobox geeft u een "
-              "wegwerpcontainer met dnf of apt. Perfect voor ontwikkeling. "
-              "Integreert naadloos met het MATE-bureaublad.",
+        "wegwerpcontainer met dnf of apt. Perfect voor ontwikkeling. "
+        "Integreert naadloos met het MATE-bureaublad.",
         "pl": "Potrzebujesz pełnego, modyfikowalnego środowiska Linux? Distrobox daje ci "
-              "jednorazowy kontener z dnf lub apt. Idealny do programowania. "
-              "Bezproblemowo integruje się z pulpitem MATE.",
+        "jednorazowy kontener z dnf lub apt. Idealny do programowania. "
+        "Bezproblemowo integruje się z pulpitem MATE.",
         "ru": "Нужна полноценная изменяемая среда Linux? Distrobox даёт вам "
-              "одноразовый контейнер с dnf или apt. Идеально для разработки. "
-              "Бесшовно интегрируется с рабочим столом MATE.",
+        "одноразовый контейнер с dnf или apt. Идеально для разработки. "
+        "Бесшовно интегрируется с рабочим столом MATE.",
         "ja": "完全な変更可能な Linux 環境が必要ですか？Distrobox は "
-              "dnf や apt を使える使い捨てコンテナを提供します。開発に最適です。"
-              "MATE デスクトップとシームレスに統合されます。",
+        "dnf や apt を使える使い捨てコンテナを提供します。開発に最適です。"
+        "MATE デスクトップとシームレスに統合されます。",
         "zh": "需要完整的可变 Linux 环境？Distrobox 提供带有 dnf 或 apt 的一次性容器。"
-              "非常适合开发。与 MATE 桌面无缝集成。",
+        "非常适合开发。与 MATE 桌面无缝集成。",
         "ko": "완전한 변경 가능한 Linux 환경이 필요하신가요? Distrobox는 "
-              "dnf 또는 apt가 포함된 일회용 컨테이너를 제공합니다. 개발에 완벽합니다. "
-              "MATE 데스크톱과 원활하게 통합됩니다.",
+        "dnf 또는 apt가 포함된 일회용 컨테이너를 제공합니다. 개발에 완벽합니다. "
+        "MATE 데스크톱과 원활하게 통합됩니다.",
     },
     "This is an atomic system — 'dnf install' on the host is not available. "
     "This is by design for reliability and security.": {
         "de": "Dies ist ein atomares System — 'dnf install' auf dem Host ist nicht verfügbar. "
-              "Das ist beabsichtigt für Zuverlässigkeit und Sicherheit.",
+        "Das ist beabsichtigt für Zuverlässigkeit und Sicherheit.",
         "fr": "C'est un système atomique — 'dnf install' sur l'hôte n'est pas disponible. "
-              "C'est intentionnel pour la fiabilité et la sécurité.",
+        "C'est intentionnel pour la fiabilité et la sécurité.",
         "es": "Este es un sistema atómico — 'dnf install' en el host no está disponible. "
-              "Esto es intencionado para fiabilidad y seguridad.",
+        "Esto es intencionado para fiabilidad y seguridad.",
         "it": "Questo è un sistema atomico — 'dnf install' sull'host non è disponibile. "
-              "Questo è intenzionale per affidabilità e sicurezza.",
+        "Questo è intenzionale per affidabilità e sicurezza.",
         "pt": "Este é um sistema atómico — 'dnf install' no host não está disponível. "
-              "Isto é intencional para fiabilidade e segurança.",
+        "Isto é intencional para fiabilidade e segurança.",
         "nl": "Dit is een atomair systeem — 'dnf install' op de host is niet beschikbaar. "
-              "Dit is ontworpen voor betrouwbaarheid en veiligheid.",
+        "Dit is ontworpen voor betrouwbaarheid en veiligheid.",
         "pl": "To system atomowy — 'dnf install' na hoście nie jest dostępne. "
-              "Jest to celowe dla niezawodności i bezpieczeństwa.",
+        "Jest to celowe dla niezawodności i bezpieczeństwa.",
         "ru": "Это атомарная система — 'dnf install' на хосте недоступен. "
-              "Это сделано намеренно для надёжности и безопасности.",
+        "Это сделано намеренно для надёжности и безопасности.",
         "ja": "これはアトミックシステムです — ホスト上で 'dnf install' は使用できません。"
-              "信頼性とセキュリティのために、これは意図的な設計です。",
+        "信頼性とセキュリティのために、これは意図的な設計です。",
         "zh": "这是一个原子化系统 — 主机上不能使用 'dnf install'。"
-              "这是为了可靠性和安全性而设计的。",
+        "这是为了可靠性和安全性而设计的。",
         "ko": "이것은 원자적 시스템입니다 — 호스트에서 'dnf install'은 사용할 수 없습니다. "
-              "이는 안정성과 보안을 위한 의도적인 설계입니다.",
+        "이는 안정성과 보안을 위한 의도적인 설계입니다.",
     },
     # ---- System Info page ----
     "System Information": {
@@ -930,26 +929,26 @@ TRANSLATIONS = {
     "Querencia Linux is open source. Contributions, bug reports, "
     "and feedback are welcome!": {
         "de": "Querencia Linux ist Open Source. Beiträge, Fehlerberichte "
-              "und Feedback sind willkommen!",
+        "und Feedback sind willkommen!",
         "fr": "Querencia Linux est open source. Les contributions, signalements de bugs "
-              "et retours sont les bienvenus !",
+        "et retours sont les bienvenus !",
         "es": "Querencia Linux es código abierto. ¡Contribuciones, reportes de errores "
-              "y comentarios son bienvenidos!",
+        "y comentarios son bienvenidos!",
         "it": "Querencia Linux è open source. Contributi, segnalazioni di bug "
-              "e feedback sono benvenuti!",
+        "e feedback sono benvenuti!",
         "pt": "O Querencia Linux é código aberto. Contribuições, relatórios de bugs "
-              "e feedback são bem-vindos!",
+        "e feedback são bem-vindos!",
         "nl": "Querencia Linux is open source. Bijdragen, bugrapporten "
-              "en feedback zijn welkom!",
+        "en feedback zijn welkom!",
         "pl": "Querencia Linux jest oprogramowaniem open source. Kontrybucje, zgłoszenia błędów "
-              "i opinie są mile widziane!",
+        "i opinie są mile widziane!",
         "ru": "Querencia Linux — проект с открытым исходным кодом. Вклад, сообщения об ошибках "
-              "и отзывы приветствуются!",
+        "и отзывы приветствуются!",
         "ja": "Querencia Linux はオープンソースです。コントリビューション、バグ報告、"
-              "フィードバックを歓迎します！",
+        "フィードバックを歓迎します！",
         "zh": "Querencia Linux 是开源的。欢迎贡献代码、报告 Bug 和提供反馈！",
         "ko": "Querencia Linux는 오픈 소스입니다. 기여, 버그 보고, "
-              "피드백을 환영합니다!",
+        "피드백을 환영합니다!",
     },
     "Website": {
         "de": "Webseite",
@@ -1061,56 +1060,56 @@ TRANSLATIONS = {
     "Built on the rock-solid foundation of AlmaLinux, with the familiar "
     "MATE Desktop, and the safety of atomic updates.": {
         "de": "Querencia (Spanisch: keh-REN-see-ah) bedeutet ein Ort, an dem man sich "
-              "sicher fühlt, ein Ort, aus dem man Kraft schöpft — ein Ort, an dem man sich "
-              "zu Hause fühlt.\n\n"
-              "Gebaut auf dem soliden Fundament von AlmaLinux, mit dem vertrauten "
-              "MATE-Desktop und der Sicherheit atomarer Aktualisierungen.",
+        "sicher fühlt, ein Ort, aus dem man Kraft schöpft — ein Ort, an dem man sich "
+        "zu Hause fühlt.\n\n"
+        "Gebaut auf dem soliden Fundament von AlmaLinux, mit dem vertrauten "
+        "MATE-Desktop und der Sicherheit atomarer Aktualisierungen.",
         "fr": "Querencia (espagnol : keh-REN-see-ah) signifie un lieu où l'on se sent "
-              "en sécurité, un lieu d'où l'on tire sa force — un lieu où l'on se sent "
-              "chez soi.\n\n"
-              "Construit sur les fondations solides d'AlmaLinux, avec le bureau MATE "
-              "familier et la sécurité des mises à jour atomiques.",
+        "en sécurité, un lieu d'où l'on tire sa force — un lieu où l'on se sent "
+        "chez soi.\n\n"
+        "Construit sur les fondations solides d'AlmaLinux, avec le bureau MATE "
+        "familier et la sécurité des mises à jour atomiques.",
         "es": "Querencia (en español: keh-REN-see-ah) significa un lugar donde uno se siente "
-              "seguro, un lugar del que se extrae fortaleza — un lugar donde uno se siente "
-              "en casa.\n\n"
-              "Construido sobre la sólida base de AlmaLinux, con el familiar "
-              "escritorio MATE y la seguridad de las actualizaciones atómicas.",
+        "seguro, un lugar del que se extrae fortaleza — un lugar donde uno se siente "
+        "en casa.\n\n"
+        "Construido sobre la sólida base de AlmaLinux, con el familiar "
+        "escritorio MATE y la seguridad de las actualizaciones atómicas.",
         "it": "Querencia (spagnolo: keh-REN-see-ah) significa un luogo dove ci si sente "
-              "al sicuro, un luogo da cui si trae forza — un luogo dove ci si sente "
-              "a casa.\n\n"
-              "Costruito sulle solide fondamenta di AlmaLinux, con il familiare "
-              "desktop MATE e la sicurezza degli aggiornamenti atomici.",
+        "al sicuro, un luogo da cui si trae forza — un luogo dove ci si sente "
+        "a casa.\n\n"
+        "Costruito sulle solide fondamenta di AlmaLinux, con il familiare "
+        "desktop MATE e la sicurezza degli aggiornamenti atomici.",
         "pt": "Querencia (espanhol: keh-REN-see-ah) significa um lugar onde nos sentimos "
-              "seguros, um lugar de onde tiramos força — um lugar onde nos sentimos "
-              "em casa.\n\n"
-              "Construído sobre a base sólida do AlmaLinux, com o familiar "
-              "ambiente MATE e a segurança das atualizações atómicas.",
+        "seguros, um lugar de onde tiramos força — um lugar onde nos sentimos "
+        "em casa.\n\n"
+        "Construído sobre a base sólida do AlmaLinux, com o familiar "
+        "ambiente MATE e a segurança das atualizações atómicas.",
         "nl": "Querencia (Spaans: keh-REN-see-ah) betekent een plek waar men zich "
-              "veilig voelt, een plek waaruit men kracht put — een plek waar men zich "
-              "thuis voelt.\n\n"
-              "Gebouwd op het rotsvaste fundament van AlmaLinux, met het vertrouwde "
-              "MATE-bureaublad en de veiligheid van atomaire updates.",
+        "veilig voelt, een plek waaruit men kracht put — een plek waar men zich "
+        "thuis voelt.\n\n"
+        "Gebouwd op het rotsvaste fundament van AlmaLinux, met het vertrouwde "
+        "MATE-bureaublad en de veiligheid van atomaire updates.",
         "pl": "Querencia (hiszpański: keh-REN-see-ah) oznacza miejsce, w którym czujemy się "
-              "bezpiecznie, miejsce, z którego czerpiemy siłę — miejsce, w którym czujemy się "
-              "jak w domu.\n\n"
-              "Zbudowany na solidnym fundamencie AlmaLinux, ze znajomym "
-              "pulpitem MATE i bezpieczeństwem atomowych aktualizacji.",
+        "bezpiecznie, miejsce, z którego czerpiemy siłę — miejsce, w którym czujemy się "
+        "jak w domu.\n\n"
+        "Zbudowany na solidnym fundamencie AlmaLinux, ze znajomym "
+        "pulpitem MATE i bezpieczeństwem atomowych aktualizacji.",
         "ru": "Querencia (исп.: кех-РЕН-сия) означает место, где чувствуешь себя "
-              "в безопасности, место, откуда черпаешь силу — место, где чувствуешь себя "
-              "как дома.\n\n"
-              "Построен на надёжном фундаменте AlmaLinux, со знакомым "
-              "рабочим столом MATE и безопасностью атомарных обновлений.",
+        "в безопасности, место, откуда черпаешь силу — место, где чувствуешь себя "
+        "как дома.\n\n"
+        "Построен на надёжном фундаменте AlmaLinux, со знакомым "
+        "рабочим столом MATE и безопасностью атомарных обновлений.",
         "ja": "Querencia（スペイン語：ケレンシア）は、安心できる場所、"
-              "力を引き出せる場所、つまり家のように感じる場所を意味します。\n\n"
-              "AlmaLinux の堅固な基盤の上に、親しみのある MATE デスクトップと"
-              "アトミックアップデートの安全性を備えて構築されています。",
+        "力を引き出せる場所、つまり家のように感じる場所を意味します。\n\n"
+        "AlmaLinux の堅固な基盤の上に、親しみのある MATE デスクトップと"
+        "アトミックアップデートの安全性を備えて構築されています。",
         "zh": "Querencia（西班牙语：keh-REN-see-ah）意为一个让人感到安全的地方，"
-              "一个汲取力量的地方 — 一个感觉像家的地方。\n\n"
-              "构建在 AlmaLinux 的坚实基础之上，拥有熟悉的 MATE 桌面和原子化更新的安全保障。",
+        "一个汲取力量的地方 — 一个感觉像家的地方。\n\n"
+        "构建在 AlmaLinux 的坚实基础之上，拥有熟悉的 MATE 桌面和原子化更新的安全保障。",
         "ko": "Querencia(스페인어: keh-REN-see-ah)는 안전하게 느끼는 곳, "
-              "힘을 끌어내는 곳 — 집처럼 느끼는 곳을 의미합니다.\n\n"
-              "AlmaLinux의 견고한 기반 위에, 익숙한 MATE 데스크톱과 "
-              "원자적 업데이트의 안전성을 갖추고 있습니다.",
+        "힘을 끌어내는 곳 — 집처럼 느끼는 곳을 의미합니다.\n\n"
+        "AlmaLinux의 견고한 기반 위에, 익숙한 MATE 데스크톱과 "
+        "원자적 업데이트의 안전성을 갖추고 있습니다.",
     },
     # ---- Bottom toolbar ----
     "Show this dialog at startup": {
@@ -1157,38 +1156,38 @@ TRANSLATIONS = {
     "It will be set up automatically on first boot, or you can install it manually:\n\n"
     "flatpak install flathub io.github.flattool.Warehouse": {
         "de": "Warehouse scheint noch nicht installiert zu sein. "
-              "Es wird beim ersten Start automatisch eingerichtet, oder Sie können es manuell installieren:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Es wird beim ersten Start automatisch eingerichtet, oder Sie können es manuell installieren:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "fr": "Warehouse ne semble pas encore être installé. "
-              "Il sera configuré automatiquement au premier démarrage, ou vous pouvez l'installer manuellement :\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Il sera configuré automatiquement au premier démarrage, ou vous pouvez l'installer manuellement :\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "es": "Warehouse no parece estar instalado aún. "
-              "Se configurará automáticamente en el primer inicio, o puede instalarlo manualmente:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Se configurará automáticamente en el primer inicio, o puede instalarlo manualmente:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "it": "Warehouse non sembra essere ancora installato. "
-              "Verrà configurato automaticamente al primo avvio, oppure puoi installarlo manualmente:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Verrà configurato automaticamente al primo avvio, oppure puoi installarlo manualmente:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "pt": "O Warehouse não parece estar instalado. "
-              "Será configurado automaticamente na primeira inicialização, ou pode instalá-lo manualmente:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Será configurado automaticamente na primeira inicialização, ou pode instalá-lo manualmente:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "nl": "Warehouse lijkt nog niet geïnstalleerd te zijn. "
-              "Het wordt automatisch ingesteld bij de eerste start, of u kunt het handmatig installeren:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Het wordt automatisch ingesteld bij de eerste start, of u kunt het handmatig installeren:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "pl": "Warehouse nie wydaje się być jeszcze zainstalowany. "
-              "Zostanie automatycznie skonfigurowany przy pierwszym uruchomieniu, lub możesz go zainstalować ręcznie:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Zostanie automatycznie skonfigurowany przy pierwszym uruchomieniu, lub możesz go zainstalować ręcznie:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "ru": "Warehouse ещё не установлен. "
-              "Он будет настроен автоматически при первом запуске, или вы можете установить его вручную:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "Он будет настроен автоматически при первом запуске, или вы можете установить его вручную:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "ja": "Warehouse はまだインストールされていないようです。"
-              "初回起動時に自動的にセットアップされます。手動でインストールすることもできます：\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "初回起動時に自動的にセットアップされます。手動でインストールすることもできます：\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "zh": "Warehouse 似乎尚未安装。"
-              "它将在首次启动时自动配置，或者您可以手动安装：\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "它将在首次启动时自动配置，或者您可以手动安装：\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
         "ko": "Warehouse가 아직 설치되지 않은 것 같습니다. "
-              "첫 부팅 시 자동으로 설정되거나, 수동으로 설치할 수 있습니다:\n\n"
-              "flatpak install flathub io.github.flattool.Warehouse",
+        "첫 부팅 시 자동으로 설정되거나, 수동으로 설치할 수 있습니다:\n\n"
+        "flatpak install flathub io.github.flattool.Warehouse",
     },
 }
 
@@ -1220,6 +1219,10 @@ CONFIG_DIR = os.path.expanduser("~/.config/querencia-welcome")
 NORUN_FLAG = os.path.join(CONFIG_DIR, "norun.flag")
 OS_RELEASE_PATH = "/usr/lib/os-release"
 IMAGE_INFO_PATH = "/usr/share/querencia/image-info.json"
+
+# Cached data — read once from disk, reused by all getters
+_os_release_cache = None
+_image_info_cache = None
 
 # =============================================================================
 # CSS — Terracotta accent on top of the BlueMenta GTK theme
@@ -1358,7 +1361,10 @@ button.suggested-action:active {{
 
 
 def read_os_release():
-    """Parse /usr/lib/os-release into a dict."""
+    """Parse /usr/lib/os-release into a dict. Cached after first call."""
+    global _os_release_cache
+    if _os_release_cache is not None:
+        return _os_release_cache
     data = {}
     try:
         with open(OS_RELEASE_PATH, "r") as f:
@@ -1370,16 +1376,21 @@ def read_os_release():
                     data[key] = value
     except Exception:
         pass
+    _os_release_cache = data
     return data
 
 
 def read_image_info():
-    """Read /usr/share/querencia/image-info.json."""
+    """Read /usr/share/querencia/image-info.json. Cached after first call."""
+    global _image_info_cache
+    if _image_info_cache is not None:
+        return _image_info_cache
     try:
         with open(IMAGE_INFO_PATH, "r") as f:
-            return json.load(f)
+            _image_info_cache = json.load(f)
     except Exception:
-        return {}
+        _image_info_cache = {}
+    return _image_info_cache
 
 
 def get_pretty_name():
@@ -1432,15 +1443,24 @@ def collect_system_info_text():
 # =============================================================================
 
 
-def launch_command(cmd, shell=False):
-    """Launch a command in the background. cmd is a list or string."""
+def launch_command(cmd):
+    """Launch a command in the background. cmd is a list of strings."""
     try:
-        if shell:
-            subprocess.Popen(cmd, shell=True)
-        else:
-            subprocess.Popen(cmd)
+        subprocess.Popen(cmd)
+    except FileNotFoundError:
+        binary = cmd[0] if cmd else "?"
+        dialog = Gtk.MessageDialog(
+            transient_for=_get_active_window(),
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=_("Failed to launch"),
+        )
+        dialog.format_secondary_text(_("'%s' is not installed.") % binary)
+        dialog.run()
+        dialog.destroy()
     except Exception as e:
         dialog = Gtk.MessageDialog(
+            transient_for=_get_active_window(),
             message_type=Gtk.MessageType.ERROR,
             buttons=Gtk.ButtonsType.OK,
             text=_("Failed to launch"),
@@ -1448,6 +1468,14 @@ def launch_command(cmd, shell=False):
         dialog.format_secondary_text(str(e))
         dialog.run()
         dialog.destroy()
+
+
+def _get_active_window():
+    """Return the active GtkWindow for transient_for, or None."""
+    app = Gio.Application.get_default()
+    if app:
+        return app.get_active_window()
+    return None
 
 
 def open_url(url):
@@ -1523,7 +1551,6 @@ def build_welcome_page(stack):
     """Page 1: Welcome — introduces Querencia Linux + MATE Desktop."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
     page.set_border_width(24)
-    page.set_valign(Gtk.Align.START)
 
     # Title
     title = Gtk.Label()
@@ -1584,7 +1611,10 @@ def build_welcome_page(stack):
     btn.connect("clicked", lambda _b: stack.set_visible_child_name("first-steps"))
     page.pack_start(btn, False, False, 0)
 
-    return page
+    scroll = Gtk.ScrolledWindow()
+    scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+    scroll.add(page)
+    return scroll
 
 
 def _make_first_step_row(icon_name, title, description, callback):
@@ -1628,15 +1658,12 @@ def build_first_steps_page():
     """Page 2: First Steps — MATE-specific tools and actions."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
     page.set_border_width(24)
-    page.set_valign(Gtk.Align.START)
 
     heading = make_heading(_("First Steps"), 1.3)
     page.pack_start(heading, False, False, 0)
 
     desc = make_label(
-        _(
-            'Get familiar with your MATE Desktop. Click "Open" to launch each tool.'
-        )
+        _('Get familiar with your MATE Desktop. Click "Open" to launch each tool.')
     )
     page.pack_start(desc, False, False, 0)
 
@@ -1673,6 +1700,7 @@ def build_first_steps_page():
             subprocess.Popen(["flatpak", "run", "io.github.flattool.Warehouse"])
         except Exception:
             dialog = Gtk.MessageDialog(
+                transient_for=_get_active_window(),
                 message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.OK,
                 text=_("Warehouse not found"),
@@ -1820,7 +1848,6 @@ def build_software_page():
     """Page 3: Installing Software — explains Flatpak / Micromamba / Distrobox."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
     page.set_border_width(24)
-    page.set_valign(Gtk.Align.START)
 
     heading = make_heading(_("Installing Software"), 1.3)
     page.pack_start(heading, False, False, 0)
@@ -1911,16 +1938,18 @@ def build_software_page():
         )
     )
     note_frame.pack_start(note_label, True, True, 0)
-    page.pack_start(note_frame, False, False, 4)
+    page.pack_start(note_frame, False, False, 0)
 
-    return page
+    scroll = Gtk.ScrolledWindow()
+    scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+    scroll.add(page)
+    return scroll
 
 
 def build_sysinfo_page():
     """Page 4: System Info — reads from os-release + image-info.json."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
     page.set_border_width(24)
-    page.set_valign(Gtk.Align.START)
 
     heading = make_heading(_("System Information"), 1.3)
     page.pack_start(heading, False, False, 0)
@@ -1969,18 +1998,12 @@ def build_sysinfo_page():
     # Buttons row
     btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
-    copy_btn = make_icon_button(
-        _("Copy System Info"), "edit-copy-symbolic"
-    )
+    copy_btn = make_icon_button(_("Copy System Info"), "edit-copy-symbolic")
     copy_btn.connect("clicked", _on_copy_sysinfo)
     btn_box.pack_start(copy_btn, False, False, 0)
 
-    term_btn = make_icon_button(
-        _("Open MATE Terminal"), "utilities-terminal-symbolic"
-    )
-    term_btn.connect(
-        "clicked", lambda _b: launch_command(["mate-terminal"])
-    )
+    term_btn = make_icon_button(_("Open MATE Terminal"), "utilities-terminal-symbolic")
+    term_btn.connect("clicked", lambda _b: launch_command(["mate-terminal"]))
     btn_box.pack_start(term_btn, False, False, 0)
 
     content_box.pack_start(btn_box, False, False, 0)
@@ -2083,7 +2106,6 @@ def build_help_page():
     """Page 5: Help & Links."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
     page.set_border_width(24)
-    page.set_valign(Gtk.Align.START)
 
     heading = make_heading(_("Help & Links"), 1.3)
     page.pack_start(heading, False, False, 0)
@@ -2204,6 +2226,8 @@ def build_sidebar(stack):
     """Build a ListBox sidebar that switches the stack."""
     listbox = Gtk.ListBox()
     listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+    listbox.set_vexpand(True)
+    listbox.set_valign(Gtk.Align.FILL)
     listbox.get_style_context().add_class("sidebar-listbox")
 
     for page_id, page_label, icon_name in PAGES:
@@ -2305,9 +2329,7 @@ class WelcomeWindow(Gtk.ApplicationWindow):
         bottom_bar.get_style_context().add_class("bottom-toolbar")
         bottom_bar.set_border_width(6)
 
-        self.startup_check = Gtk.CheckButton(
-            label=_("Show this dialog at startup")
-        )
+        self.startup_check = Gtk.CheckButton(label=_("Show this dialog at startup"))
         self.startup_check.set_active(not os.path.exists(NORUN_FLAG))
         self.startup_check.connect("toggled", self._on_startup_toggled)
         bottom_bar.pack_start(self.startup_check, False, False, 0)
@@ -2382,12 +2404,6 @@ class WelcomeApp(Gtk.Application):
 
 
 def main():
-    # If --norun-check is passed, exit silently if the norun flag exists.
-    # Used by the autostart launcher to avoid showing the window.
-    if "--norun-check" in sys.argv:
-        if os.path.exists(NORUN_FLAG):
-            sys.exit(0)
-
     app = WelcomeApp()
     return app.run(sys.argv)
 
