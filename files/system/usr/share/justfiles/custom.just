@@ -143,7 +143,24 @@ install-horizon:
     fi
     echo ""
     echo "Installing dependencies..."
-    distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y gtk3 libXtst libusbx alsa-lib pulseaudio-libs mesa-libGL mesa-libEGL libxkbfile xdg-utils firefox"
+    distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y gtk3 libXtst libusbx alsa-lib pulseaudio-libs mesa-libGL mesa-libEGL libxkbfile xdg-utils firefox dnf-plugins-core cpio"
+    echo ""
+    # --- Firefox langpacks ----------------------------------------------------
+    # The AlmaLinux container image strips /usr/lib64/firefox/browser/extensions/
+    # even though the langpack .xpi files are part of the firefox RPM. We extract
+    # the langpacks matching the current system locale so the container Firefox
+    # appears in the user's language.
+    LANG_SHORT="${LANG%%_*}"  # e.g. "de" from "de_DE.utf8"
+    if [ -n "${LANG_SHORT}" ] && [ "${LANG_SHORT}" != "en" ]; then
+        echo "Installing Firefox langpack for '${LANG_SHORT}'..."
+        distrobox enter "${CONTAINER}" -- bash -c "
+            if [ ! -f /usr/lib64/firefox/browser/extensions/langpack-${LANG_SHORT}@firefox.mozilla.org.xpi ]; then
+                tmpdir=\$(mktemp -d) && cd / &&
+                sudo dnf download firefox --destdir=\"\${tmpdir}\" 2>/dev/null &&
+                sudo rpm2cpio \"\${tmpdir}\"/firefox-*.rpm | sudo cpio -idm \"./usr/lib64/firefox/browser/extensions/langpack-${LANG_SHORT}@firefox.mozilla.org.xpi\" 2>/dev/null
+                sudo rm -rf \"\${tmpdir}\"
+            fi"
+    fi
     echo ""
     echo "Configuring local browser handoff inside Distrobox..."
     distrobox enter "${CONTAINER}" -- bash -c "mkdir -p ~/.local/bin && cat > ~/.local/bin/xdg-open <<'EOF'
