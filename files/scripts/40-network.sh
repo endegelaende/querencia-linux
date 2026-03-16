@@ -11,6 +11,7 @@ dnf install -y \
     bluez \
     blueman \
     firewalld \
+    firewall-config \
     samba-client \
     cifs-utils
 
