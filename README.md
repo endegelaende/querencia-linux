@@ -113,6 +113,7 @@ The root filesystem is **read-only**. Install software with Micromamba (CLI tool
 | Component | Details |
 |---|---|
 | Firewall | firewalld (enabled by default) |
+| Firewall GUI | firewall-config (GTK frontend for firewalld) |
 | SELinux | Enforcing + setroubleshoot (graphical notifications) |
 | PolicyKit | mate-polkit agent, wheel group can manage Flatpak |
 | Auto-Update | bootc + Flatpak updates every 6 hours (desktop notification) |
@@ -323,6 +324,15 @@ ujust maintenance         # full maintenance (update + clean)
 | `ujust distrobox-ubuntu` | Create Ubuntu container |
 | `ujust distrobox-list` | List all containers |
 | `ujust distrobox-upgrade` | Upgrade all containers |
+</details>
+
+<details>
+<summary><b>Third-Party Apps</b></summary>
+
+| Command | Description |
+|---|---|
+| `ujust install-horizon` | Install Omnissa Horizon Client (VDI) in a Distrobox |
+| `ujust remove-horizon` | Remove Horizon Client and its Distrobox |
 </details>
 
 <details>
