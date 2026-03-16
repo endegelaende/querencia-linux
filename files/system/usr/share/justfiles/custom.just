@@ -130,6 +130,8 @@ install-horizon:
     CONTAINER="horizon"
     RPM_URL="https://download3.omnissa.com/software/CART26FQ4_LIN64_RPMPKG_2512.1/Omnissa-Horizon-Client-2512-8.17.1-22261155021.x64.rpm"
     RPM_FILE="/tmp/omnissa-horizon-client.x86_64.rpm"
+    LOCAL_APPS="${HOME}/.local/share/applications"
+    LOCAL_BIN="${HOME}/.local/bin"
     echo "=== Omnissa Horizon Client Installer ==="
     echo ""
     # Create AlmaLinux 10 distrobox if it doesn't exist
@@ -143,6 +145,13 @@ install-horizon:
     echo "Installing dependencies..."
     distrobox enter "${CONTAINER}" -- bash -c "sudo dnf install -y gtk3 libXtst libusbx alsa-lib pulseaudio-libs mesa-libGL mesa-libEGL libxkbfile xdg-utils firefox"
     echo ""
+    echo "Configuring local browser handoff inside Distrobox..."
+    distrobox enter "${CONTAINER}" -- bash -c "mkdir -p ~/.local/bin && cat > ~/.local/bin/xdg-open <<'EOF'
+#!/usr/bin/env bash
+exec /usr/bin/firefox \"\$@\"
+EOF
+chmod +x ~/.local/bin/xdg-open"
+    echo ""
     echo "Downloading Horizon Client RPM..."
     distrobox enter "${CONTAINER}" -- bash -c "curl -fSL -o ${RPM_FILE} '${RPM_URL}'"
     echo ""
@@ -152,8 +161,55 @@ install-horizon:
     echo "Exporting Horizon Client to host desktop..."
     distrobox enter "${CONTAINER}" -- bash -c "distrobox-export --app horizon-client 2>/dev/null || true"
     echo ""
+    # --- SAML/Workspace ONE fix -----------------------------------------------
+    # Keep the complete browser handoff inside the Distrobox. By default, the
+    # Distrobox xdg-open wrapper forwards https:// URLs to the host browser,
+    # which makes the Workspace ONE -> vmware-view:// callback unreliable.
+    # We export a launcher that prepends ~/.local/bin to PATH so our local
+    # xdg-open wrapper starts Firefox inside the container. The vmware-view://
+    # callback is still handled on the host and forwarded back into the
+    # container via a small wrapper.
+    echo "Setting up SAML authentication handler..."
+    mkdir -p "${LOCAL_BIN}"
+    cat > "${LOCAL_BIN}/horizon-vmware-view-handler" <<'HANDLER'
+#!/usr/bin/env bash
+CONTAINER="horizon"
+URL="${1:-}"
+if [ -z "${URL}" ]; then
+    exit 0
+fi
+exec /usr/bin/distrobox-enter -n "${CONTAINER}" -- horizon-client "${URL}"
+HANDLER
+    chmod +x "${LOCAL_BIN}/horizon-vmware-view-handler"
+    DESKTOP_FILE="${LOCAL_APPS}/horizon-horizon-client.desktop"
+    if [ -f "${DESKTOP_FILE}" ]; then
+        cat > "${DESKTOP_FILE}" <<DESKTOP
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Icon=/run/host/home/${USER}/.local/share/icons/horizon-client.png
+Exec=/usr/bin/distrobox-enter -n ${CONTAINER} -- bash -lc 'export PATH="$HOME/.local/bin:$PATH"; exec horizon-client %u'
+Terminal=false
+Categories=Application;Network;
+Name=Omnissa Horizon Client
+Comment=Omnissa Horizon VDI Client
+MimeType=x-scheme-handler/vmware-view;
+StartupWMClass=horizon-client
+DESKTOP
+    fi
+    cat > "${LOCAL_APPS}/horizon-vmware-view-handler.desktop" <<URLHANDLER
+[Desktop Entry]
+Type=Application
+Name=Horizon SAML Handler
+NoDisplay=true
+Exec=${LOCAL_BIN}/horizon-vmware-view-handler %u
+MimeType=x-scheme-handler/vmware-view;
+URLHANDLER
+    xdg-mime default horizon-vmware-view-handler.desktop x-scheme-handler/vmware-view 2>/dev/null || true
+    update-desktop-database "${LOCAL_APPS}" 2>/dev/null || true
+    echo ""
     echo "Done! Omnissa Horizon Client should appear in your application menu."
-    echo "If not, log out and back in."
+    echo "SAML/Workspace ONE authentication is configured."
     echo ""
     echo "To uninstall: ujust remove-horizon"
 
@@ -162,8 +218,15 @@ remove-horizon:
     #!/usr/bin/env bash
     set -euo pipefail
     CONTAINER="horizon"
+    LOCAL_APPS="${HOME}/.local/share/applications"
+    LOCAL_BIN="${HOME}/.local/bin"
     echo "Removing Horizon Client desktop integration..."
-    distrobox enter "${CONTAINER}" -- bash -c "distrobox-export --app horizon-client --delete 2>/dev/null || true"
+    distrobox enter "${CONTAINER}" -- bash -c "distrobox-export --app horizon-client --delete 2>/dev/null || true; rm -f ~/.local/bin/xdg-open"
+    rm -f "${LOCAL_APPS}/horizon-vmware-view-handler.desktop"
+    rm -f "${LOCAL_BIN}/horizon-vmware-view-handler"
+    rm -f "${LOCAL_BIN}/horizon-launcher"
+    rm -f "${LOCAL_APPS}/vmware-view-handler.desktop"
+    update-desktop-database "${LOCAL_APPS}" 2>/dev/null || true
     echo "Removing distrobox '${CONTAINER}'..."
     distrobox rm --force "${CONTAINER}" 2>/dev/null || true
     echo "Done. Omnissa Horizon Client has been removed."
