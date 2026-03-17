@@ -5,6 +5,8 @@
 #
 # Called by: ujust install-horizon
 # Location:  /usr/lib/querencia/scripts/install-horizon.sh
+#
+# See OMNISSA.md for full problem analysis and architecture documentation.
 # =============================================================================
 set -euo pipefail
 
@@ -65,17 +67,34 @@ fi
 # =============================================================================
 # 4) Local xdg-open wrapper inside the container
 # =============================================================================
-# By default, Distrobox's xdg-open forwards URLs to the host browser. This
-# breaks the Workspace ONE SAML flow because the vmware-view:// callback from
-# the host browser cannot reliably reach the container. We override xdg-open
-# inside the container to use the local Firefox, keeping the entire SAML flow
-# (browser → SafeNet Login → vmware-view:// callback → Horizon Client) inside
-# the Distrobox.
+# Distrobox creates an xdg-open wrapper in ~/.local/bin/ that forwards all URLs
+# to the host browser (Firefox). This breaks the vmware-view:// SAML callback
+# because Firefox would receive the URL back instead of handing it to the
+# Horizon Client.
+#
+# Fix: The wrapper now detects vmware-view:// URLs and routes them to the real
+# /usr/bin/xdg-open (inside the container), which finds the registered
+# x-scheme-handler and invokes the Horizon SAML handler. All other URLs
+# continue to go to Firefox as before.
 echo ""
-echo "Configuring local browser handoff inside Distrobox..."
+echo "Configuring xdg-open wrapper for SAML handoff..."
 distrobox enter "${CONTAINER}" -- bash -c \
     'mkdir -p ~/.local/bin && cat > ~/.local/bin/xdg-open <<'"'"'XDGEOF'"'"'
 #!/usr/bin/env bash
+# xdg-open wrapper for Distrobox "horizon" container.
+# Routes vmware-view:// SAML callbacks to the real system xdg-open so they
+# reach the registered scheme handler (horizon-client). Everything else goes
+# to Firefox (distrobox host browser integration).
+#
+# Without this, vmware-view:// URLs loop back into Firefox because
+# ~/.local/bin appears before /usr/bin in PATH.
+
+URL="${1:-}"
+
+if [[ "${URL}" == vmware-view://* ]]; then
+    exec /usr/bin/xdg-open "${URL}"
+fi
+
 exec /usr/bin/firefox "$@"
 XDGEOF
 chmod +x ~/.local/bin/xdg-open'
@@ -104,9 +123,19 @@ distrobox enter "${CONTAINER}" -- bash -c \
 # =============================================================================
 # 7) SAML/Workspace ONE handler on host
 # =============================================================================
-# The Horizon server redirects to vmware-view://...?SAMLart=... after SAML
-# authentication. If for any reason this URL reaches the host (e.g. user copies
-# the link), this handler forwards it back into the Distrobox.
+# After SAML authentication the Horizon server redirects Firefox to
+# vmware-view://...?SAMLart=<token>. Firefox delegates to xdg-open, which
+# finds horizon-vmware-view-handler.desktop and invokes this script.
+#
+# Key points:
+#   - The script detects whether it is running inside the Distrobox container
+#     (/run/.containerenv exists) or on the bare host.
+#   - Inside the container: call horizon-client directly.
+#   - On the host: use distrobox-enter to reach horizon-client.
+#   - horizon-client MUST be started with nohup + background + redirected
+#     streams. Without this it receives SIGPIPE/SIGHUP when the calling
+#     process chain (xdg-open → handler) exits, and dies immediately
+#     (producing a 0-byte log file).
 echo ""
 echo "Setting up SAML authentication handler..."
 mkdir -p "${LOCAL_BIN}"
@@ -116,10 +145,23 @@ cat > "${LOCAL_BIN}/horizon-vmware-view-handler" <<'HANDLER'
 #!/usr/bin/env bash
 CONTAINER="horizon"
 URL="${1:-}"
+
 if [ -z "${URL}" ]; then
     exit 0
 fi
-exec /usr/bin/distrobox-enter -n "${CONTAINER}" -- horizon-client "${URL}"
+
+if [ -f /run/.containerenv ] || [ -f /.dockerenv ]; then
+    # We are inside the Distrobox container (Firefox was started via
+    # distrobox-enter, so the whole process tree is in the container
+    # namespace). Call horizon-client directly.
+    #
+    # nohup + background + stream redirection prevents horizon-client from
+    # being killed by SIGPIPE/SIGHUP when the parent process chain exits.
+    nohup horizon-client "${URL}" </dev/null >/dev/null 2>&1 &
+else
+    # We are on the host — enter the container to reach horizon-client.
+    exec /usr/bin/distrobox-enter -n "${CONTAINER}" -- horizon-client "${URL}"
+fi
 HANDLER
 chmod +x "${LOCAL_BIN}/horizon-vmware-view-handler"
 

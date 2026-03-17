@@ -1,6 +1,7 @@
 # Project context (local only, not for GitHub)
 CLAUDE.md
 UPDATE.md
+OMNISSA.md
 
 # Build artifacts
 *.img
