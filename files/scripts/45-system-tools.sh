@@ -58,3 +58,9 @@ dnf install -y ddcutil || true
 
 # Power management (laptop power analysis and tuning)
 dnf install -y powertop || true
+
+# Fingerprint authentication (many laptops have fingerprint readers)
+dnf install -y fprintd fprintd-pam || true
+if rpm -q fprintd >/dev/null 2>&1; then
+    authselect enable-feature with-fingerprint 2>/dev/null || true
+fi
