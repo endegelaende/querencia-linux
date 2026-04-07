@@ -131,6 +131,14 @@ install-horizon:
 remove-horizon:
     @bash /usr/lib/querencia/scripts/remove-horizon.sh
 
+# Install Cisco Webex (video conferencing) in a Distrobox container
+install-webex:
+    @bash /usr/lib/querencia/scripts/install-webex.sh
+
+# Remove Cisco Webex and its Distrobox
+remove-webex:
+    @bash /usr/lib/querencia/scripts/remove-webex.sh
+
 # =============================================================================
 # GPU (auto-detects AMD or NVIDIA)
 # =============================================================================

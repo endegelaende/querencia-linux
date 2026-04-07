@@ -3,6 +3,9 @@ CLAUDE.md
 UPDATE.md
 OMNISSA.md
 
+# Binary downloads (e.g. Webex.rpm)
+bin/
+
 # Build artifacts
 *.img
 *.iso
