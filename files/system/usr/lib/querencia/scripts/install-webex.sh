@@ -39,7 +39,6 @@ distrobox enter "${CONTAINER}" -- bash -c \
      at-spi2-core \
      atk \
      gtk3 \
-     libXScrnSaver \
      libXcomposite \
      libXcursor \
      libXrandr \
