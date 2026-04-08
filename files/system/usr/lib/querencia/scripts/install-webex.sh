@@ -87,11 +87,16 @@ echo "Exporting Webex to host desktop..."
 distrobox enter "${CONTAINER}" -- bash -c \
     "distrobox-export --app CiscoCollabHost 2>/dev/null || true"
 
+# Remove the distrobox-export generated .desktop file — we create our own below
+# with correct naming, icon path, and categories.
+rm -f "${LOCAL_APPS}/webex-webex.desktop"
+
 # =============================================================================
 # 5) Create/override desktop entry with proper Exec line
 # =============================================================================
 # The distrobox-export may create a .desktop file, but we need to ensure
 # proper naming, icon path, and URL scheme handling.
+# The icon is copied to ~/.local/share/icons/ by distrobox-export.
 echo ""
 echo "Configuring desktop integration..."
 mkdir -p "${LOCAL_APPS}"
@@ -103,7 +108,7 @@ Version=1.0
 Type=Application
 Name=Cisco Webex
 Comment=Webex — Meetings, Messaging, Calling
-Icon=/run/host/opt/Webex/bin/sparklogosmall.png
+Icon=${HOME}/.local/share/icons/sparklogosmall.png
 Exec=/usr/bin/distrobox-enter -n ${CONTAINER} -- /opt/Webex/bin/CiscoCollabHost %U
 Terminal=false
 Categories=Network;InstantMessaging;VideoConference;
