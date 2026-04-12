@@ -1136,7 +1136,7 @@
       "source_build_method": "make_srpm",
       "auto_rebuild": false,
       "upstream_status": "deprecated",
-      "notes": "DEPRECATED — not installed in image, not needed. Linux Mint menu for MATE (no Fedora upstream, dead.package in distgit). Uses .copr/Makefile to fetch source from linuxmint/mintmenu GitHub. Migrated from GitLab to GitHub 2026-03-13."
+      "notes": "DEPRECATED — not installed in image, not needed. GitHub repo archived 2026-04-13. Linux Mint menu for MATE (no Fedora upstream, dead.package in distgit). Uses .copr/Makefile to fetch source from linuxmint/mintmenu GitHub. Migrated from GitLab to GitHub 2026-03-13."
     },
     {
       "name": "libxklavier",

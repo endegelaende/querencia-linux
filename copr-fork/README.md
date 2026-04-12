@@ -276,7 +276,7 @@ These point to `src.fedoraproject.org` and are pinned to our chosen branch (defa
 
 ### GitHub-Forks (5 packages — all under `github.com/endegelaende/`)
 
-These packages have minimal EL10 patches on top of clean Fedora specs. Each repo contains a `.copr/Makefile` for the `make_srpm` build method. See `forks/README.md` for detailed patch descriptions.
+These packages have minimal EL10 patches on top of clean Fedora specs. Each repo contains a `.copr/Makefile` for the `make_srpm` build method.
 
 | Package | Repo | Branch | Base | EL10 Patch |
 |---|---|---|---|---|
@@ -285,7 +285,6 @@ These packages have minimal EL10 patches on top of clean Fedora specs. Each repo
 | `lightdm` | `rpms-lightdm` | `f43-el10` | Fedora f43 | Greeter dep bootstrap (circular dep), `pam_lastlog` |
 | `mate-settings-daemon` | `rpms-mate-settings-daemon` | `f43-el10` | Fedora f43 | Patch0 unconditional (otherwise not in SRPM) |
 | `xorg-x11-drv-qxl` | `rpms-xorg-x11-drv-qxl` | `f43-el10` | Fedora f43 | Xspice disabled (no `spice-server-devel` on EL10) |
-| ~~`mintmenu`~~ | ~~`rpms-mintmenu`~~ | ~~`r10`~~ | ~~Community packaging~~ | **DEPRECATED** — not installed in image |
 
 Formerly upload, now on SCM: `system-config-printer`, `qadwaitadecorations` (→ GitHub forks), `mozo`, `network-manager-applet`, `libreport` (→ Fedora distgit).
 
@@ -426,11 +425,7 @@ Check the COPR monitor page for build status:
 | `setup-copr-fork.sh` | One-time setup: creates all packages in your COPR project |
 | `rebuild-all.sh` | Triggers rebuild of all SCM packages (skips deprecated packages where `auto_rebuild: false`) |
 | `rebuild-failed.sh` | Detect and rebuild failed packages in dependency order |
-| `download-srpms.sh` | Downloads SRPMs from COPR build results |
-| `migrate-to-forks.sh` | Upload→SCM migration script (✅ completed 2026-03-13) |
-| `migrate-to-forks-curl.sh` | curl-based migration (without copr-cli, for Windows) |
 | `packages.json` | Machine-readable package inventory with branch mappings |
-| `forks/` | Patch documentation and reference materials for GitHub fork repos |
 
 > **Note:** Several packages in `packages.json` are marked `"auto_rebuild": false` —
 > these are deprecated packages (e.g. `dnfdragora`, the `libyui-*` family,
